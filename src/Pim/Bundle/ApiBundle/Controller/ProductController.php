@@ -14,6 +14,7 @@ use Pim\Component\Api\Exception\PaginationParametersException;
 use Pim\Component\Api\Exception\ViolationHttpException;
 use Pim\Component\Api\Pagination\HalPaginator;
 use Pim\Component\Api\Pagination\ParameterValidatorInterface;
+use Pim\Component\Api\Repository\ProductRepositoryInterface;
 use Pim\Component\Catalog\Builder\ProductBuilderInterface;
 use Pim\Component\Catalog\Comparator\Filter\ProductFilterInterface;
 use Pim\Component\Catalog\Exception\InvalidOperatorException;
@@ -23,7 +24,6 @@ use Pim\Component\Catalog\Model\ProductInterface;
 use Pim\Component\Catalog\Query\Filter\Operators;
 use Pim\Component\Catalog\Query\ProductQueryBuilderFactoryInterface;
 use Pim\Component\Catalog\Query\ProductQueryBuilderInterface;
-use Pim\Component\Catalog\Repository\ProductRepositoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -174,7 +174,7 @@ class ProductController
 
         $normalizerOptions = $this->getNormalizerOptions($request, $channel);
 
-        $pqb = $this->pqbFactory->create([]);
+        $pqb = $this->pqbFactory->create();
         try {
             $this->setPQBFilters($pqb, $request, $channel);
         } catch (PropertyException $e) {
@@ -185,15 +185,12 @@ class ProductController
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         }
 
-        $count = $this->productRepository->count($pqb->getQueryBuilder());
+        $offset = ($queryParameters['page'] - 1) * $queryParameters['limit'];
+        $products = $this->productRepository->searchAfterOffset($pqb, $queryParameters['limit'], $offset);
+        $count = $this->productRepository->count($pqb);
 
-        $pqb->getQueryBuilder()
-            ->setMaxResults($queryParameters['limit'])
-            ->setFirstResult(($queryParameters['page'] - 1) * $queryParameters['limit']);
-
-        $productsApi = $this->normalizer->normalize($pqb->execute(), 'external_api', $normalizerOptions);
         $paginatedProducts = $this->paginator->paginate(
-            $productsApi,
+            $this->normalizer->normalize($products, 'external_api', $normalizerOptions),
             array_merge($request->query->all(), $queryParameters),
             $count,
             'pim_api_product_list',
