@@ -9,6 +9,8 @@ use Akeneo\Component\StorageUtils\Remover\RemoverInterface;
 use Akeneo\Component\StorageUtils\Repository\IdentifiableObjectRepositoryInterface;
 use Akeneo\Component\StorageUtils\Saver\SaverInterface;
 use Akeneo\Component\StorageUtils\Updater\ObjectUpdaterInterface;
+use Pim\Bundle\ApiBundle\Stream\ProductStreamUpdater;
+use Pim\Bundle\ApiBundle\Stream\StreamProductUpdater;
 use Pim\Bundle\CatalogBundle\Version;
 use Pim\Component\Api\Exception\DocumentedHttpException;
 use Pim\Component\Api\Exception\PaginationParametersException;
@@ -27,12 +29,9 @@ use Pim\Component\Catalog\Validator\UniqueValuesSet;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -89,17 +88,11 @@ class ProductController
     /** @var ProductFilterInterface */
     protected $emptyValuesFilter;
 
-    /** @var HttpKernelInterface */
-    protected $httpKernel;
-
-    /** @var UniqueValuesSet */
-    protected $uniqueValuesSet;
-
     /** @var ObjectDetacherInterface */
     protected $detacher;
 
-    /** @var int */
-    protected $bufferSize;
+    /** @var ProductStreamUpdater */
+    protected $productStreamUpdater;
 
     /** @var string */
     protected $urlDocumentation;
@@ -120,10 +113,8 @@ class ProductController
      * @param SaverInterface                        $saver
      * @param RouterInterface                       $router
      * @param ProductFilterInterface                $emptyValuesFilter
-     * @param HttpKernelInterface                   $httpKernel
-     * @param UniqueValuesSet                       $uniqueValuesSet
      * @param ObjectDetacherInterface               $detacher
-     * @param int                                   $bufferSize
+     * @param ProductStreamUpdater                  $productStreamUpdater
      * @param string                                $urlDocumentation
      */
     public function __construct(
@@ -142,10 +133,8 @@ class ProductController
         SaverInterface $saver,
         RouterInterface $router,
         ProductFilterInterface $emptyValuesFilter,
-        HttpKernelInterface $httpKernel,
-        UniqueValuesSet $uniqueValuesSet,
         ObjectDetacherInterface $detacher,
-        $bufferSize,
+        ProductStreamUpdater $productStreamUpdater,
         $urlDocumentation
     ) {
         $this->pqbFactory = $pqbFactory;
@@ -163,10 +152,8 @@ class ProductController
         $this->saver = $saver;
         $this->router = $router;
         $this->emptyValuesFilter = $emptyValuesFilter;
-        $this->httpKernel = $httpKernel;
-        $this->uniqueValuesSet = $uniqueValuesSet;
         $this->detacher = $detacher;
-        $this->bufferSize = $bufferSize;
+        $this->productStreamUpdater = $productStreamUpdater;
         $this->urlDocumentation = sprintf($urlDocumentation, substr(Version::VERSION, 0, 3));
     }
 
@@ -332,7 +319,28 @@ class ProductController
     public function partialUpdateAction(Request $request, $code)
     {
         $data = $this->getDecodedContent($request->getContent());
-        return $this->partialProductUpdate($data, $code);
+
+        $product = $this->productRepository->findOneByIdentifier($code);
+        $isCreation = null === $product;
+
+        if ($isCreation) {
+            $this->validateCodeConsistency($code, $data);
+            $product = $this->productBuilder->createProduct();
+        }
+
+        $data['identifier'] = array_key_exists('identifier', $data) ? $data['identifier'] : $code;
+        $data = $this->populateIdentifierProductValue($data);
+        $data = $isCreation ? $data : $this->filterValues($product, $data);
+
+        $this->updateProduct($product, $data);
+        $this->validateProduct($product);
+        $this->saver->save($product);
+        $this->detacher->detach($product);
+
+        $status = $isCreation ? Response::HTTP_CREATED : Response::HTTP_NO_CONTENT;
+        $response = $this->getResponse($product, $status);
+
+        return $response;
     }
 
     /**
@@ -353,128 +361,11 @@ class ProductController
      */
     public function partialUpdateListAction(Request $request)
     {
-        $response = new StreamedResponse();
-
-        $response->setCallback(function() use ($request) {
-            $streamContent = $request->getContent(true);
-
-            $line = true;
-            do {
-                try {
-                    $line = $this->readInputBuffer($streamContent);
-                    if (false === $line) {
-                        continue;
-                    }
-                    $data = $this->getDecodedContent($line);
-
-                    if (!isset($data['identifier'])) {
-                        throw new UnprocessableEntityHttpException('Identifier is missing');
-                    }
-                    $subRequest = new Request([], [], [], [], [], [], $line);
-                    $subRequest->setRequestFormat('json');
-                    $subRequest->attributes->add([
-                        '_controller' => 'pim_api.controller.product:partialUpdateAction',
-                        'code'        => $data['identifier'],
-                    ]);
-
-                    $subResponse = $this->httpKernel->handle($subRequest, HttpKernelInterface::SUB_REQUEST);
-
-                    $this->uniqueValuesSet->reset();
-
-                    if ('' !== $subResponse->getContent()) {
-                        $response = ['identifier' => $data['identifier']] + json_decode($subResponse->getContent(), true);
-                    } else {
-                        $response = ['identifier' => $data['identifier'],  'code' => $subResponse->getStatusCode()];
-                    }
-                } catch (HttpException $e) {
-                    $response = ['code' => $e->getStatusCode(), 'message' => $e->getMessage()];
-                }
-
-                $this->flushOutputBuffer($response);
-            } while (false !== $line);
-
-        });
-
-        return $response;
-    }
-
-    /**
-     * Flush the buffer with the content encoded with JSON.
-     * A carriage return is added to separate the content from the next line.
-     *
-     * @param $content
-     */
-    protected function flushOutputBuffer($content)
-    {
-        echo json_encode($content).PHP_EOL;
-        ob_flush();
-    }
-
-    /**
-     * Read a line from a stream.
-     * If the line is too long fot the buffer, consume the rest of the line
-     * and throws an exception.
-     *
-     * @param $streamContent
-     *
-     * @throws UnprocessableEntityHttpException
-     * @return string
-     */
-    protected function readInputBuffer($streamContent)
-    {
-        $buffer = stream_get_line($streamContent, $this->bufferSize + 1, PHP_EOL);
-        $bufferSizeExceeded = strlen($buffer) > $this->bufferSize;
-
-        while (strlen($buffer) > $this->bufferSize) {
-            $buffer = stream_get_line($streamContent, $this->bufferSize + 1, PHP_EOL);
-        }
-
-        if ($bufferSizeExceeded) {
-            throw new BadRequestHttpException("Line is too long.");
-        }
-
-        return $buffer;
-    }
-
-    /**
-     * Create or update a single product.
-     *
-     * @param array       $data standardized product
-     * @param string|null $code code of the product provided in the url, null if not present in the url
-     *
-     * @return Response
-     */
-    protected function partialProductUpdate(array $data, $code)
-    {
-        $isCreation = false;
-
-        if (null === $code && array_key_exists('identifier', $data)) {
-            $code = $data['identifier'];
-        }
-
-        $product = $this->productRepository->findOneByIdentifier($code);
-
-        if (null === $product) {
-            $isCreation = true;
-
-            $this->validateCodeConsistency($code, $data);
-            $data['identifier'] = $code;
-
-            $data = $this->populateIdentifierProductValue($data);
-            $product = $this->productBuilder->createProduct();
-        } else {
-            $data['identifier'] = array_key_exists('identifier', $data) ? $data['identifier'] : $code;
-            $data = $this->populateIdentifierProductValue($data);
-            $data = $this->filterValues($product, $data);
-        }
-
-        $this->updateProduct($product, $data);
-        $this->validateProduct($product);
-        $this->saver->save($product);
-        $this->detacher->detach($product);
-
-        $status = $isCreation ? Response::HTTP_CREATED : Response::HTTP_NO_CONTENT;
-        $response = $this->getResponse($product, $status);
+        $response = $this->productStreamUpdater->buildStreamResponse(
+            $request,
+            'pim_api.controller.product:partialUpdateAction',
+            'identifier'
+        );
 
         return $response;
     }

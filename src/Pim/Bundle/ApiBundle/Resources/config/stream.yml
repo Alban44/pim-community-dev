@@ -1,0 +1,11 @@
+parameters:
+    pim_api.stream.product_stream_updater.class: Pim\Bundle\ApiBundle\Stream\ProductStreamUpdater
+
+services:
+    pim_api.stream.product_stream_updater:
+        class: '%pim_api.stream.product_stream_updater.class%'
+        arguments:
+            - '@request_stack'
+            - '@http_kernel'
+            - '@pim_catalog.validator.unique_value_set'
+            - '%api_buffer_size%'

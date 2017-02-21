@@ -8,8 +8,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PartialUpdateListProductIntegration extends AbstractProductTestCase
 {
+    /**
+     * {@inheritdoc}
+     */
+    public function setUp()
+    {
+        parent::setUp();
 
-    protected $buffer = '';
+        $this->createProduct('product_family', [
+            'family' => 'familyA2',
+        ]);
+    }
 
     public function testPartialUpdateListWithTooLongLines()
     {
@@ -42,16 +51,16 @@ JSON;
 
         $expectedContent =
 <<<JSON
-{"code":400,"message":"Invalid json message received"}
-{"code":400,"message":"Invalid json message received"}
-{"code":400,"message":"Invalid json message received"}
-{"code":400,"message":"Line is too long."}
-{"code":400,"message":"Line is too long."}
-{"code":400,"message":"Line is too long."}
-{"code":400,"message":"Line is too long."}
-{"code":400,"message":"Line is too long."}
-{"code":400,"message":"Line is too long."}
-{"code":400,"message":"Invalid json message received"}
+{"line":1,"code":400,"message":"Invalid json message received"}
+{"line":2,"code":400,"message":"Invalid json message received"}
+{"line":3,"code":400,"message":"Invalid json message received"}
+{"line":4,"code":400,"message":"Line is too long."}
+{"line":5,"code":400,"message":"Line is too long."}
+{"line":6,"code":400,"message":"Line is too long."}
+{"line":7,"code":400,"message":"Line is too long."}
+{"line":8,"code":400,"message":"Line is too long."}
+{"line":9,"code":400,"message":"Line is too long."}
+{"line":10,"code":400,"message":"Invalid json message received"}
 
 JSON;
 
@@ -65,14 +74,83 @@ JSON;
     {
         $data =
 <<<JSON
-    {"identifier": "my_code"}
-    {"identifier": "my_code"}
+    {"identifier": "my_identifier"}
+    {"identifier": "my_identifier"}
 JSON;
 
         $expectedContent =
 <<<JSON
-{"identifier":"my_code","code":201}
-{"identifier":"my_code","code":204}
+{"line":1,"identifier":"my_identifier","code":201}
+{"line":2,"identifier":"my_identifier","code":204}
+
+JSON;
+
+
+        $response = $this->executeStreamRequest('PATCH', 'api/rest/v1/products', [], [], [], $data);
+
+        $this->assertSame(Response::HTTP_OK, $response['status']);
+        $this->assertSame($expectedContent, $response['content']);
+    }
+
+    public function testErrorWhenIdentifierIsMissing()
+    {
+        $data =
+<<<JSON
+    {"code": "my_identifier"}
+    {"identifier": null}
+    {"identifier": ""}
+    {"identifier": " "}
+    {}
+JSON;
+
+        $expectedContent =
+<<<JSON
+{"line":1,"code":422,"message":"Identifier is missing."}
+{"line":2,"code":422,"message":"Identifier is missing."}
+{"line":3,"code":422,"message":"Identifier is missing."}
+{"line":4,"code":422,"message":"Identifier is missing."}
+{"line":5,"code":422,"message":"Identifier is missing."}
+
+JSON;
+
+        $response = $this->executeStreamRequest('PATCH', 'api/rest/v1/products', [], [], [], $data);
+
+        $this->assertSame(Response::HTTP_OK, $response['status']);
+        $this->assertSame($expectedContent, $response['content']);
+    }
+
+    public function testUpdateWhenUpdaterFailed()
+    {
+        $data =
+<<<JSON
+    {"identifier": "foo", "variant_group":"bar"}
+JSON;
+
+
+        $version = substr(Version::VERSION, 0, 3);
+        $expectedContent =
+<<<JSON
+{"line":1,"identifier":"foo","code":422,"message":"Property \"variant_group\" expects a valid variant group code. The variant group does not exist, \"bar\" given. Check the standard format documentation.","_links":{"documentation":{"href":"https:\/\/docs.akeneo.com\/${version}\/reference\/standard_format\/products.html"}}}
+
+JSON;
+
+
+        $response = $this->executeStreamRequest('PATCH', 'api/rest/v1/products', [], [], [], $data);
+
+        $this->assertSame(Response::HTTP_OK, $response['status']);
+        $this->assertSame($expectedContent, $response['content']);
+    }
+
+    public function testUpdateWhenValidationFailed()
+    {
+        $data =
+<<<JSON
+    {"identifier": "foo,"}
+JSON;
+
+        $expectedContent =
+<<<JSON
+{"line":1,"identifier":"foo,","code":422,"message":"Validation failed.","errors":[{"field":"values[sku].varchar","message":"This field should not contain any comma or semicolon."}]}
 
 JSON;
 
