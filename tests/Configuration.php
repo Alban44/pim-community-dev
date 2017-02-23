@@ -105,6 +105,16 @@ class Configuration
     /**
      * @return string
      */
+    public static function getMinimalCatalogPath()
+    {
+        return realpath(self::getRootDirectory() . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Pim' .
+            DIRECTORY_SEPARATOR . 'Bundle' . DIRECTORY_SEPARATOR . 'InstallerBundle' . DIRECTORY_SEPARATOR .
+            'Resources' . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'minimal');
+    }
+
+    /**
+     * @return string
+     */
     private static function getRootDirectory()
     {
         return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR);
