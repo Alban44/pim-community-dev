@@ -4,6 +4,8 @@ namespace Pim\Bundle\CatalogBundle\tests\integration\Completeness;
 
 use Akeneo\Test\Integration\Configuration;
 use Pim\Component\Catalog\AttributeTypes;
+use Pim\Component\Catalog\Model\CompletenessInterface;
+use Pim\Component\Catalog\Model\ProductInterface;
 
 /**
  * Checks that the completeness has been well calculated for localisable and locale specific attribute types.
@@ -40,7 +42,8 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
             'another_family',
             'ecommerce',
             'a_text',
-            AttributeTypes::TEXT
+            AttributeTypes::TEXT,
+            true
         );
 
         $product = $this->createProductWithStandardValues(
@@ -63,9 +66,12 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
                 ]
             ]
         );
+
+        $this->assertComplete($product, 'en_US');
+        $this->assertNotComplete($product, 'fr_FR');
     }
 
-    public function testLocaleSpecific()
+    public function testLocaleSpecificNoLocale()
     {
         $fr = $this->get('pim_catalog.repository.locale')->findOneByIdentifier('fr_FR');
 
@@ -74,10 +80,29 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
             'ecommerce',
             'a_text',
             AttributeTypes::TEXT,
+            true,
+            false,
             [$fr]
         );
 
         $productEmptyNoLocale = $this->createProductWithStandardValues($family, 'product_empty_no_locale');
+        $this->assertNotComplete($productEmptyNoLocale, 'fr_FR');
+        $this->assertNotComplete($productEmptyNoLocale, 'en_US');
+    }
+
+    public function testLocaleSpecificLocaleEmpty()
+    {
+        $fr = $this->get('pim_catalog.repository.locale')->findOneByIdentifier('fr_FR');
+
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_text',
+            AttributeTypes::TEXT,
+            true,
+            false,
+            [$fr]
+        );
 
         $productEmptyLocaleEmpty = $this->createProductWithStandardValues(
             $family,
@@ -85,14 +110,6 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
             [
                 'values' => [
                     'a_text' => [
-                        // en_US should throw an error
-                        /*
-                        [
-                            'locale' => 'en_US',
-                            'scope'  => null,
-                            'data'   => 'just a text'
-                        ],
-                        */
                         [
                             'locale' => 'fr_FR',
                             'scope'  => null,
@@ -101,6 +118,23 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
                     ]
                 ]
             ]
+        );
+        $this->assertNotComplete($productEmptyLocaleEmpty, 'fr_FR');
+        $this->assertComplete($productEmptyLocaleEmpty, 'en_US');
+    }
+
+    public function testLocaleSpecificComplete()
+    {
+        $fr = $this->get('pim_catalog.repository.locale')->findOneByIdentifier('fr_FR');
+
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_text',
+            AttributeTypes::TEXT,
+            true,
+            false,
+            [$fr]
         );
 
         $productFull = $this->createProductWithStandardValues(
@@ -118,6 +152,8 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
                 ]
             ]
         );
+        $this->assertComplete($productFull, 'fr_FR');
+        $this->assertComplete($productFull, 'en_US');
     }
 
     /**
@@ -129,5 +165,65 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
             [Configuration::getMinimalCatalogPath()],
             true
         );
+    }
+
+    /**
+     * @param ProductInterface $product
+     * @param string           $localeCode
+     *
+     * @throws \Exception
+     * @return CompletenessInterface
+     */
+    private function getCompletenessByLocaleCode(ProductInterface $product, $localeCode)
+    {
+        $completenesses = $product->getCompletenesses()->toArray();
+
+        foreach ($completenesses as $completeness) {
+            if ($localeCode === $completeness->getLocale()->getCode()) {
+                return $completeness;
+            }
+        }
+
+        throw new \Exception(sprintf('No completeness for the locale "%s"', $localeCode));
+    }
+
+    /**
+     * @param ProductInterface $product
+     * @param string           $localeCode
+     */
+    private function assertNotComplete(ProductInterface $product, $localeCode)
+    {
+        $completenesses = $product->getCompletenesses()->toArray();
+        $this->assertNotNull($completenesses);
+        $this->assertCount(2, $completenesses);
+
+        $completeness = $this->getCompletenessByLocaleCode($product, $localeCode);
+        $this->assertNotNull($completeness->getLocale());
+        $this->assertEquals($localeCode, $completeness->getLocale()->getCode());
+        $this->assertNotNull($completeness->getChannel());
+        $this->assertEquals('ecommerce', $completeness->getChannel()->getCode());
+        $this->assertEquals(50, $completeness->getRatio());
+        $this->assertEquals(2, $completeness->getRequiredCount());
+        $this->assertEquals(1, $completeness->getMissingCount());
+    }
+
+    /**
+     * @param ProductInterface $product
+     * @param string           $localeCode
+     */
+    private function assertComplete(ProductInterface $product, $localeCode)
+    {
+        $completenesses = $product->getCompletenesses()->toArray();
+        $this->assertNotNull($completenesses);
+        $this->assertCount(2, $completenesses);
+
+        $completeness = $this->getCompletenessByLocaleCode($product, $localeCode);
+        $this->assertNotNull($completeness->getLocale());
+        $this->assertEquals($localeCode, $completeness->getLocale()->getCode());
+        $this->assertNotNull($completeness->getChannel());
+        $this->assertEquals('ecommerce', $completeness->getChannel()->getCode());
+        $this->assertEquals(100, $completeness->getRatio());
+        $this->assertEquals(2, $completeness->getRequiredCount());
+        $this->assertEquals(0, $completeness->getMissingCount());
     }
 }

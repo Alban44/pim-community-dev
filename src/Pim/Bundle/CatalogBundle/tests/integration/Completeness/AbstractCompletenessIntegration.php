@@ -63,6 +63,8 @@ abstract class AbstractCompletenessIntegration extends TestCase
      * @param string            $channelCode
      * @param string            $attributeCode
      * @param string            $attributeType
+     * @param bool              $localisable
+     * @param bool              $scopable
      * @param LocaleInterface[] $localesSpecific
      *
      * @return FamilyInterface
@@ -72,10 +74,14 @@ abstract class AbstractCompletenessIntegration extends TestCase
         $channelCode,
         $attributeCode,
         $attributeType,
+        $localisable = false,
+        $scopable = false,
         array $localesSpecific = []
     ) {
         $channel = $this->get('pim_catalog.repository.channel')->findOneByIdentifier($channelCode);
         $attribute = $this->createAttribute($attributeCode, $attributeType);
+        $attribute->setLocalizable($localisable);
+        $attribute->setScopable($scopable);
         foreach ($localesSpecific as $locale) {
             $attribute->addAvailableLocale($locale);
         }
