@@ -10,6 +10,7 @@ use Pim\Component\Catalog\Model\AttributeRequirementInterface;
 use Pim\Component\Catalog\Model\ChannelInterface;
 use Pim\Component\Catalog\Model\CompletenessInterface;
 use Pim\Component\Catalog\Model\FamilyInterface;
+use Pim\Component\Catalog\Model\LocaleInterface;
 use Pim\Component\Catalog\Model\ProductInterface;
 
 /**
@@ -24,7 +25,7 @@ use Pim\Component\Catalog\Model\ProductInterface;
  * @copyright 2017 Akeneo SAS (http://www.akeneo.com)
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-class CompletenenessPerAttributeTypeIntegration extends TestCase
+class CompletenenessPerAttributeTypeIntegration extends AbstractCompletenessIntegration
 {
     public function testNumber()
     {
@@ -82,11 +83,11 @@ class CompletenenessPerAttributeTypeIntegration extends TestCase
                             'scope'  => null,
                             'data'   => [
                                 [
-                                    'amount' => 42,
+                                    'amount'   => 42,
                                     'currency' => 'USD',
                                 ],
                                 [
-                                    'amount' => 69,
+                                    'amount'   => 69,
                                     'currency' => 'EUR',
                                 ],
                             ]
@@ -96,11 +97,11 @@ class CompletenenessPerAttributeTypeIntegration extends TestCase
             ]
         );
 
-        $productEmptyNoCurrency = $this->createProductWithStandardValues($family, 'product_empty');
+        $productEmptyNoCurrency = $this->createProductWithStandardValues($family, 'product_empty_no_currency');
 
-        $productEmptyEmptyCurrencies = $this->createProductWithStandardValues(
+        $productEmptyCurrencies = $this->createProductWithStandardValues(
             $family,
-            'product_empty_too',
+            'product_empty_currencies',
             [
                 'values' => [
                     'a_price_collection' => [
@@ -109,11 +110,11 @@ class CompletenenessPerAttributeTypeIntegration extends TestCase
                             'scope'  => null,
                             'data'   => [
                                 [
-                                    'amount' => null,
+                                    'amount'   => null,
                                     'currency' => 'USD',
                                 ],
                                 [
-                                    'amount' => null,
+                                    'amount'   => null,
                                     'currency' => 'EUR',
                                 ],
                             ]
@@ -125,7 +126,7 @@ class CompletenenessPerAttributeTypeIntegration extends TestCase
 
         $productEmptyMissingCurrency = $this->createProductWithStandardValues(
             $family,
-            'product_empty_too',
+            'product_empty_missing_currency',
             [
                 'values' => [
                     'a_price_collection' => [
@@ -134,7 +135,7 @@ class CompletenenessPerAttributeTypeIntegration extends TestCase
                             'scope'  => null,
                             'data'   => [
                                 [
-                                    'amount' => 67,
+                                    'amount'   => 67,
                                     'currency' => 'USD',
                                 ],
                             ]
@@ -146,78 +147,8 @@ class CompletenenessPerAttributeTypeIntegration extends TestCase
 
         $this->assertComplete($productFull);
         $this->assertNotComplete($productEmptyNoCurrency);
-        $this->assertNotComplete($productEmptyEmptyCurrencies);
+        $this->assertNotComplete($productEmptyCurrencies);
         $this->assertNotComplete($productEmptyMissingCurrency);
-    }
-
-    /**
-     * @return Configuration
-     */
-    protected function getConfiguration()
-    {
-        return new Configuration(
-            [Configuration::getMinimalCatalogPath()],
-            true
-        );
-    }
-
-    /**
-     * @param string $code
-     * @param string $type
-     *
-     * @return AttributeInterface
-     */
-    private function createAttribute($code, $type)
-    {
-        $attributeFactory = $this->get('pim_catalog.factory.attribute');
-        $attributeSaver = $this->get('pim_catalog.saver.attribute');
-
-        $attribute = $attributeFactory->createAttribute($type);
-        $attribute->setCode($code);
-        $attributeSaver->save($attribute);
-
-        return $attribute;
-    }
-
-    /**
-     * @param FamilyInterface $family
-     * @param string          $code
-     * @param array           $standardValues
-     *
-     * @return ProductInterface
-     */
-    private function createProductWithStandardValues(FamilyInterface $family, $code, $standardValues = [])
-    {
-        $product = $this->get('pim_catalog.builder.product')->createProduct($code, $family->getCode());
-        $this->get('pim_catalog.updater.product')->update($product, $standardValues);
-        $this->get('pim_catalog.saver.product')->save($product);
-
-        return $product;
-    }
-
-    /**
-     * @param string $familyCode
-     * @param string $channelCode
-     * @param string $attributeCode
-     * @param string $attributeType
-     *
-     * @return FamilyInterface
-     */
-    private function createFamilyWithRequirement($familyCode, $channelCode, $attributeCode, $attributeType)
-    {
-        $channel = $this->get('pim_catalog.repository.channel')->findOneByIdentifier($channelCode);
-        $attribute = $this->createAttribute($attributeCode, $attributeType);
-
-        $requirement = $this->get('pim_catalog.factory.attribute_requirement')
-            ->createAttributeRequirement($attribute, $channel, true);
-
-        $family = $this->get('pim_catalog.factory.family')->create();
-        $family->setCode($familyCode);
-        $family->addAttribute($attribute);
-        $family->addAttributeRequirement($requirement);
-        $this->get('pim_catalog.saver.family')->save($family);
-
-        return $family;
     }
 
     /**
