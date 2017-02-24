@@ -123,7 +123,33 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
 
     public function testImage()
     {
-        //
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'an_image',
+            AttributeTypes::IMAGE
+        );
+
+        $productFull = $this->createProductWithStandardValues(
+            $family,
+            'product_full',
+            [
+                'values' => [
+                    'an_image' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => $this->getFixturePath('akeneo.jpg'),
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+        $productEmpty = $this->createProductWithStandardValues($family, 'product_empty');
+
+        $this->assertComplete($productFull);
+        $this->assertNotComplete($productEmpty);
     }
 
     public function testMetric()
