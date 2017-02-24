@@ -17,7 +17,7 @@ use Akeneo\Test\Integration\TestCase;
 class CompletenessForNonRequiredAttributeIntegration extends TestCase
 {
     /**
-     * @return Configuration
+     * {@inheritdoc}
      */
     protected function getConfiguration()
     {

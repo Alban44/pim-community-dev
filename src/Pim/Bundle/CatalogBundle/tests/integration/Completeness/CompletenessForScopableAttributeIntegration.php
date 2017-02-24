@@ -2,10 +2,7 @@
 
 namespace Pim\Bundle\CatalogBundle\tests\integration\Completeness;
 
-use Akeneo\Test\Integration\Configuration;
-use Akeneo\Test\Integration\TestCase;
 use Pim\Component\Catalog\AttributeTypes;
-use Pim\Component\Catalog\Model\CompletenessInterface;
 use Pim\Component\Catalog\Model\ProductInterface;
 
 /**

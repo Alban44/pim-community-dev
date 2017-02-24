@@ -17,7 +17,7 @@ use Pim\Component\Catalog\Model\ProductInterface;
 abstract class AbstractCompletenessIntegration extends TestCase
 {
     /**
-     * @return Configuration
+     * {@inheritdoc}
      */
     protected function getConfiguration()
     {

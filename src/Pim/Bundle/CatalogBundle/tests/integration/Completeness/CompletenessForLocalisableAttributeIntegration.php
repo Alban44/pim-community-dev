@@ -160,7 +160,7 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
     }
 
     /**
-     * @return Configuration
+     * {@inheritdoc}
      */
     protected function getConfiguration()
     {

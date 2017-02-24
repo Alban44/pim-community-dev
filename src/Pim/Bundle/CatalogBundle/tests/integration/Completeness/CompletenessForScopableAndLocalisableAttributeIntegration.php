@@ -32,7 +32,7 @@ class CompletenessForScopableAndLocalisableAttributeIntegration extends Abstract
 
 
     /**
-     * @return Configuration
+     * {@inheritdoc}
      */
     protected function getConfiguration()
     {
