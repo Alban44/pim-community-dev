@@ -26,6 +26,9 @@ use Pim\Component\Catalog\Model\ProductInterface;
  */
 class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenessIntegration
 {
+    /**
+     * {@inheritdoc}
+     */
     public function setUp()
     {
         parent::setUp();
