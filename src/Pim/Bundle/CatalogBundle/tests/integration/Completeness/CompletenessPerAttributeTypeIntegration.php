@@ -56,7 +56,33 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
 
     public function testDate()
     {
-        //
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_date',
+            AttributeTypes::DATE
+        );
+
+        $productFull = $this->createProductWithStandardValues(
+            $family,
+            'product_full',
+            [
+                'values' => [
+                    'a_date' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => '2012-08-05'
+                        ],
+                    ]
+                ]
+            ]
+        );
+
+        $productEmpty = $this->createProductWithStandardValues($family, 'product_empty');
+
+        $this->assertComplete($productFull);
+        $this->assertNotComplete($productEmpty);
     }
 
     public function testFile()
@@ -280,8 +306,10 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
     }
 
     /**
-     * This methods should not be needed once PIM-6056 is fixed.
-     * But for now, when creating an empty boolean product value, it is automatically set to false.
+     * For now, when creating an empty boolean product value, it is automatically
+     * set to false by the product builder.
+     *
+     * @todo To remove once PIM-6056 is fixed.
      *
      * @param ProductInterface $product
      * @param string           $attributeCode
