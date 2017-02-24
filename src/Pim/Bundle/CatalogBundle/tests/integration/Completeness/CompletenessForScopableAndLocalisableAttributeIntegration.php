@@ -3,7 +3,6 @@
 namespace Pim\Bundle\CatalogBundle\tests\integration\Completeness;
 
 use Akeneo\Test\Integration\Configuration;
-use Akeneo\Test\Integration\TestCase;
 use Pim\Component\Catalog\Model\CompletenessInterface;
 use Pim\Component\Catalog\Model\ProductInterface;
 
@@ -18,6 +17,9 @@ use Pim\Component\Catalog\Model\ProductInterface;
  */
 class CompletenessForScopableAndLocalisableAttributeIntegration extends AbstractCompletenessIntegration
 {
+    /**
+     * {@inheritdoc}
+     */
     protected function setUp()
     {
         parent::setUp();
@@ -166,7 +168,11 @@ class CompletenessForScopableAndLocalisableAttributeIntegration extends Abstract
             }
         }
 
-        throw new \Exception(sprintf('No completeness for the channel "%s" and locale "%s"', $channelCode, $localeCode));
+        throw new \Exception(sprintf(
+            'No completeness for the channel "%s" and locale "%s"',
+            $channelCode,
+            $localeCode
+        ));
     }
 
     private function getSandalStandardValues()
