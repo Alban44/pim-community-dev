@@ -21,7 +21,37 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
 {
     public function testBoolean()
     {
-        //
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_boolean',
+            AttributeTypes::BOOLEAN
+        );
+
+        $productFull = $this->createProductWithStandardValues(
+            $family,
+            'product_full',
+            [
+                'values' => [
+                    'a_boolean' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => true
+                        ],
+                    ]
+                ]
+            ]
+        );
+
+        $productEmpty = $this->createProductWithStandardValues($family, 'product_empty');
+
+        $this->assertComplete($productFull);
+
+        // TODO: This is not as it should be, but inevitable because of PIM-6056
+        // TODO: When PIM-6056 is fixed, we should be able to use "assertNotComplete"
+        $this->assertComplete($productEmpty);
+        $this->assertBooleanValueIsFalse($productEmpty, 'a_boolean', null, null);
     }
 
     public function testDate()
@@ -247,5 +277,20 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
         $this->assertEquals(50, $completeness->getRatio());
         $this->assertEquals(2, $completeness->getRequiredCount());
         $this->assertEquals(1, $completeness->getMissingCount());
+    }
+
+    /**
+     * This methods should not be needed once PIM-6056 is fixed.
+     * But for now, when creating an empty boolean product value, it is automatically set to false.
+     *
+     * @param ProductInterface $product
+     * @param string           $attributeCode
+     * @param string|null      $channelCode
+     * @param string|null      $localeCode
+     */
+    private function assertBooleanValueIsFalse(ProductInterface $product, $attributeCode, $channelCode, $localeCode)
+    {
+        $booleanValue = $product->getValue($attributeCode, $channelCode, $localeCode);
+        $this->assertFalse($booleanValue->getData());
     }
 }
