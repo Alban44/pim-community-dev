@@ -51,7 +51,7 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
 
         $product = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'another_product',
             [
                 'values' => [
                     'a_text' => [
