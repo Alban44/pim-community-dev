@@ -176,7 +176,12 @@ Pim\Bundle\CatalogBundle\Entity\AttributeOption:
         - Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
             - code
             - attribute
-        - Pim\Component\Catalog\Validator\Constraints\AttributeTypeForOption : ~
+        - Pim\Component\Catalog\Validator\Constraints\AttributeTypeForOption:
+            propertyPath: attribute
+        - Pim\Component\Catalog\Validator\Constraints\Immutable:
+            properties:
+                - code
+                - attribute
     properties:
         code:
             - NotBlank: ~
@@ -188,3 +193,15 @@ Pim\Bundle\CatalogBundle\Entity\AttributeOption:
         attribute:
             - NotBlank: ~
             - Valid: ~
+        optionValues:
+            - Valid: ~
+
+Pim\Bundle\CatalogBundle\Entity\AttributeOptionValue:
+    properties:
+        value:
+            - Length:
+                max: 100
+        locale:
+            - Pim\Component\Catalog\Validator\Constraints\Locale:
+                propertyPath: labels
+
