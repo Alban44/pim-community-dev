@@ -32,10 +32,10 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                         [
                             'locale' => null,
                             'scope'  => null,
-                            'data'   => 42
+                            'data'   => 42,
                         ],
-                    ]
-                ]
+                    ],
+                ],
             ]
         );
 
@@ -60,10 +60,10 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                         [
                             'locale' => null,
                             'scope'  => null,
-                            'data'   => 0
+                            'data'   => 0,
                         ],
-                    ]
-                ]
+                    ],
+                ],
             ]
         );
 
@@ -88,10 +88,10 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                         [
                             'locale' => null,
                             'scope'  => null,
-                            'data'   => null
+                            'data'   => null,
                         ],
-                    ]
-                ]
+                    ],
+                ],
             ]
         );
 

@@ -43,10 +43,10 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
                                     'amount'   => 69,
                                     'currency' => 'EUR',
                                 ],
-                            ]
+                            ],
                         ],
                     ]
-                ]
+                ],
             ]
         );
 
@@ -84,10 +84,10 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
                                     'amount'   => null,
                                     'currency' => 'EUR',
                                 ],
-                            ]
+                            ],
                         ],
-                    ]
-                ]
+                    ],
+                ],
             ]
         );
 
@@ -105,10 +105,10 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
                                     'amount'   => 67,
                                     'currency' => 'USD',
                                 ],
-                            ]
+                            ],
                         ],
-                    ]
-                ]
+                    ],
+                ],
             ]
         );
 
