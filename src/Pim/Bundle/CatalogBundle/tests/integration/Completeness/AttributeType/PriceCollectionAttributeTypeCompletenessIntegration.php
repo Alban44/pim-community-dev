@@ -16,10 +16,7 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
 {
     public function testPriceCollection()
     {
-        $euro = $this->get('pim_catalog.repository.currency')->findOneByIdentifier('EUR');
-        $ecommerce = $this->get('pim_catalog.repository.channel')->findOneByIdentifier('ecommerce');
-        $ecommerce->addCurrency($euro);
-        $this->get('pim_catalog.saver.channel')->save($ecommerce);
+        $this->addCurrencyToChannel('EUR', 'ecommerce');
 
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -51,6 +48,20 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
                     ]
                 ]
             ]
+        );
+
+        $this->assertComplete($productFull);
+    }
+
+    public function testEmptyPriceCollection()
+    {
+        $this->addCurrencyToChannel('EUR', 'ecommerce');
+
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_price_collection',
+            AttributeTypes::PRICE_COLLECTION
         );
 
         $productEmptyNoCurrency = $this->createProductWithStandardValues($family, 'product_empty_no_currency');
@@ -101,9 +112,20 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
             ]
         );
 
-        $this->assertComplete($productFull);
         $this->assertNotComplete($productEmptyNoCurrency);
         $this->assertNotComplete($productEmptyCurrencies);
         $this->assertNotComplete($productEmptyMissingCurrency);
+    }
+
+    /**
+     * @param string $currencyCode
+     * @param string $channelCode
+     */
+    private function addCurrencyToChannel($currencyCode, $channelCode)
+    {
+        $euro = $this->get('pim_catalog.repository.currency')->findOneByIdentifier($currencyCode);
+        $ecommerce = $this->get('pim_catalog.repository.channel')->findOneByIdentifier($channelCode);
+        $ecommerce->addCurrency($euro);
+        $this->get('pim_catalog.saver.channel')->save($ecommerce);
     }
 }

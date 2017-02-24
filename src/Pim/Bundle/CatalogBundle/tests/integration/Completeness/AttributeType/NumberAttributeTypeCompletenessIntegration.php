@@ -32,16 +32,72 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                         [
                             'locale' => null,
                             'scope'  => null,
-                            'data'   => 10
+                            'data'   => 42
                         ],
                     ]
                 ]
             ]
         );
 
-        $productEmpty = $this->createProductWithStandardValues($family, 'product_empty');
-
         $this->assertComplete($productFull);
+    }
+
+    public function testZero()
+    {
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_number_integer',
+            AttributeTypes::NUMBER
+        );
+
+        $productFullWithZero = $this->createProductWithStandardValues(
+            $family,
+            'product_full_with_zero',
+            [
+                'values' => [
+                    'a_number_integer' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => 0
+                        ],
+                    ]
+                ]
+            ]
+        );
+
+        $this->assertComplete($productFullWithZero);
+    }
+
+    public function testEmptyNumber()
+    {
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_number_integer',
+            AttributeTypes::NUMBER
+        );
+
+        $productEmpty = $this->createProductWithStandardValues(
+            $family,
+            'product_empty',
+            [
+                'values' => [
+                    'a_number_integer' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => null
+                        ],
+                    ]
+                ]
+            ]
+        );
+
+        $productWithoutValue = $this->createProductWithStandardValues($family, 'product_without_values');
+
         $this->assertNotComplete($productEmpty);
+        $this->assertNotComplete($productWithoutValue);
     }
 }

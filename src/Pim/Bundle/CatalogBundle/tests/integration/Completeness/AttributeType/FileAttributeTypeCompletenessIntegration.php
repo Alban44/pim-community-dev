@@ -39,9 +39,37 @@ class FileAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             ]
         );
 
-        $productEmpty = $this->createProductWithStandardValues($family, 'product_empty');
-
         $this->assertComplete($productFull);
+    }
+
+    public function testEmptyFile()
+    {
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_file',
+            AttributeTypes::FILE
+        );
+
+        $productEmpty = $this->createProductWithStandardValues(
+            $family,
+            'product_empty',
+            [
+                'values' => [
+                    'a_file' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => null,
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+        $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
+
         $this->assertNotComplete($productEmpty);
+        $this->assertNotComplete($productWithoutValues);
     }
 }

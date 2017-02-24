@@ -39,9 +39,37 @@ class ImageAttributeTypeCompletenessIntegration extends AbstractCompletenessPerA
             ]
         );
 
-        $productEmpty = $this->createProductWithStandardValues($family, 'product_empty');
-
         $this->assertComplete($productFull);
+    }
+
+    public function testEmptyImage()
+    {
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'an_image',
+            AttributeTypes::IMAGE
+        );
+
+        $productEmpty = $this->createProductWithStandardValues(
+            $family,
+            'product_empty',
+            [
+                'values' => [
+                    'an_image' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => null,
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+        $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
+
         $this->assertNotComplete($productEmpty);
+        $this->assertNotComplete($productWithoutValues);
     }
 }
