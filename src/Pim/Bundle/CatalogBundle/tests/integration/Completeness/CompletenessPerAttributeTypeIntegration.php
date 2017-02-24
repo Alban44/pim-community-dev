@@ -19,6 +19,36 @@ use Pim\Component\Catalog\Model\ProductInterface;
  */
 class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegration
 {
+    public function testBoolean()
+    {
+        //
+    }
+
+    public function testDate()
+    {
+        //
+    }
+
+    public function testFile()
+    {
+        //
+    }
+
+    public function testIdentifier()
+    {
+        //
+    }
+
+    public function testImage()
+    {
+        //
+    }
+
+    public function testMetric()
+    {
+        //
+    }
+
     public function testNumber()
     {
         $family = $this->createFamilyWithRequirement(
@@ -48,6 +78,16 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
 
         $this->assertComplete($productFull);
         $this->assertNotComplete($productEmpty);
+    }
+
+    public function testOption()
+    {
+        //
+    }
+
+    public function testOptions()
+    {
+        //
     }
 
     public function testPriceCollection()
@@ -141,6 +181,26 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
         $this->assertNotComplete($productEmptyNoCurrency);
         $this->assertNotComplete($productEmptyCurrencies);
         $this->assertNotComplete($productEmptyMissingCurrency);
+    }
+
+    public function testText()
+    {
+        //
+    }
+
+    public function testTextArea()
+    {
+        //
+    }
+
+    public function testReferenceDataSimple()
+    {
+        //
+    }
+
+    public function testReferenceDataMulti()
+    {
+        //
     }
 
     /**
