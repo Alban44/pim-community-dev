@@ -37,10 +37,10 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
                         [
                             'locale' => null,
                             'scope'  => null,
-                            'data'   => true
+                            'data'   => true,
                         ],
-                    ]
-                ]
+                    ],
+                ],
             ]
         );
 
@@ -72,10 +72,10 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
                         [
                             'locale' => null,
                             'scope'  => null,
-                            'data'   => '2012-08-05'
+                            'data'   => '2012-08-05',
                         ],
-                    ]
-                ]
+                    ],
+                ],
             ]
         );
 
@@ -87,7 +87,33 @@ class CompletenessPerAttributeTypeIntegration extends AbstractCompletenessIntegr
 
     public function testFile()
     {
-        //
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_file',
+            AttributeTypes::FILE
+        );
+
+        $productFull = $this->createProductWithStandardValues(
+            $family,
+            'product_full',
+            [
+                'values' => [
+                    'a_file' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => $this->getFixturePath('akeneo.txt'),
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+        $productEmpty = $this->createProductWithStandardValues($family, 'product_empty');
+
+        $this->assertComplete($productFull);
+        $this->assertNotComplete($productEmpty);
     }
 
     public function testIdentifier()
