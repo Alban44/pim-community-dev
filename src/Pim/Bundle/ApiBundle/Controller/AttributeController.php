@@ -267,7 +267,7 @@ class AttributeController
      */
     protected function validateCodeConsistency($code, array $data)
     {
-        if (isset($data['code']) && $code !== $data['code']) {
+        if (array_key_exists('code', $data) && $code !== $data['code']) {
             throw new UnprocessableEntityHttpException(
                 sprintf(
                     'The code "%s" provided in the request body must match the code "%s" provided in the url.',
@@ -289,7 +289,7 @@ class AttributeController
     protected function getResponse(AttributeInterface $attribute, $status)
     {
         $response = new Response(null, $status);
-        $url = $this->router->generate('pim_api_rest_attribute_get', ['code' => $attribute->getCode()], true);
+        $url = $this->router->generate('pim_api_attribute_get', ['code' => $attribute->getCode()], true);
         $response->headers->set('Location', $url);
 
         return $response;

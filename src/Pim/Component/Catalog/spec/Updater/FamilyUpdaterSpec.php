@@ -111,7 +111,7 @@ class FamilyUpdaterSpec extends ObjectBehavior
         $skuMobileRqrmt->getChannelCode()->willReturn('mobile');
 
         $skuAttribute->getCode()->willReturn('sku');
-        $skuAttribute->getAttributeType()->willReturn(AttributeTypes::IDENTIFIER);
+        $skuAttribute->getType()->willReturn(AttributeTypes::IDENTIFIER);
 
         $skuPrintRqrmt->getAttribute()->willReturn($skuAttribute);
         $skuPrintRqrmt->getChannelCode()->willReturn('print');
@@ -153,9 +153,9 @@ class FamilyUpdaterSpec extends ObjectBehavior
         $attributeRepository->findOneByIdentifier('sku')->willReturn($skuAttribute);
         $attributeRepository->findOneByIdentifier('price')->willReturn($priceAttribute);
 
-        $nameAttribute->getAttributeType()->willReturn(AttributeTypes::TEXT);
-        $descAttribute->getAttributeType()->willReturn(AttributeTypes::TEXTAREA);
-        $priceAttribute->getAttributeType()->willReturn(AttributeTypes::PRICE_COLLECTION);
+        $nameAttribute->getType()->willReturn(AttributeTypes::TEXT);
+        $descAttribute->getType()->willReturn(AttributeTypes::TEXTAREA);
+        $priceAttribute->getType()->willReturn(AttributeTypes::PRICE_COLLECTION);
 
         $family->setCode('mycode')->shouldBeCalled();
 
@@ -195,12 +195,16 @@ class FamilyUpdaterSpec extends ObjectBehavior
     }
 
     function it_does_not_remove_requirements_when_channel_column_is_missing(
+        $channelRepository,
+        ChannelInterface $mobileChannel,
         FamilyInterface $family,
         AttributeInterface $skuAttribute,
         AttributeRequirementInterface $skuMobileRqrmt,
         AttributeRequirementInterface $skuEcommerceRqrmt,
         AttributeRequirementInterface $nameEcommerceRqrmt
     ) {
+        $channelRepository->findOneByIdentifier('mobile')->willReturn($mobileChannel);
+
         $values = [
             'attribute_requirements' => [
                 'mobile' => ['sku']
@@ -285,7 +289,7 @@ class FamilyUpdaterSpec extends ObjectBehavior
         $skuPrintRqrmt->getAttribute()->willReturn($skuAttribute);
 
         $skuAttribute->getCode()->willReturn('sku');
-        $skuAttribute->getAttributeType()->willReturn(AttributeTypes::IDENTIFIER);
+        $skuAttribute->getType()->willReturn(AttributeTypes::IDENTIFIER);
 
         $family->removeAttributeRequirement($skuMobileRqrmt)->shouldNotBeCalled();
         $family->removeAttributeRequirement($skuPrintRqrmt)->shouldNotBeCalled();
@@ -298,8 +302,8 @@ class FamilyUpdaterSpec extends ObjectBehavior
         $printChannel->getId()->willReturn('1');
         $nameAttribute->getId()->willReturn('1');
         $descriptionAttribute->getId()->willReturn('2');
-        $nameAttribute->getAttributeType()->willReturn('text');
-        $descriptionAttribute->getAttributeType()->willReturn('text');
+        $nameAttribute->getType()->willReturn('text');
+        $descriptionAttribute->getType()->willReturn('text');
         $family->getId()->willReturn('1');
 
         $attributeRequirementRepo->findOneBy([
@@ -436,8 +440,9 @@ class FamilyUpdaterSpec extends ObjectBehavior
         $data = [
             'code'                   => 'mycode',
             'attribute_requirements' => [
-                'mobile' => ['sku', 'name'],
-                'print'  => ['sku', 'name', 'description'],
+                'ecommerce' => ['sku'],
+                'mobile'    => ['sku', 'name'],
+                'print'     => ['sku', 'name', 'description'],
             ]
         ];
         $family->getAttributeRequirements()->willReturn([]);
@@ -449,6 +454,7 @@ class FamilyUpdaterSpec extends ObjectBehavior
         $attributeRepository->findOneByIdentifier('price')->willReturn($attribute);
         $channelRepository->findOneByIdentifier('print')->willReturn(null);
         $channelRepository->findOneByIdentifier('mobile')->willReturn(null);
+        $channelRepository->findOneByIdentifier('ecommerce')->willReturn(null);
 
         $this->shouldThrow(
             InvalidPropertyException::validEntityCodeExpected(
@@ -456,7 +462,7 @@ class FamilyUpdaterSpec extends ObjectBehavior
                 'code',
                 'The channel does not exist',
                 'Pim\Component\Catalog\Updater\FamilyUpdater',
-                'mobile'
+                'ecommerce'
             )
         )->during('update', [$family, $data]);
     }

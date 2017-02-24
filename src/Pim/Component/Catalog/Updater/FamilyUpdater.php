@@ -13,6 +13,7 @@ use Pim\Component\Catalog\AttributeTypes;
 use Pim\Component\Catalog\Factory\AttributeRequirementFactory;
 use Pim\Component\Catalog\Model\AttributeInterface;
 use Pim\Component\Catalog\Model\AttributeRequirementInterface;
+use Pim\Component\Catalog\Model\ChannelInterface;
 use Pim\Component\Catalog\Model\FamilyInterface;
 use Pim\Component\Catalog\Repository\AttributeRepositoryInterface;
 use Pim\Component\Catalog\Repository\AttributeRequirementRepositoryInterface;
@@ -246,7 +247,7 @@ class FamilyUpdater implements ObjectUpdaterInterface
             if (array_key_exists($channelCode, $newRequirements)) {
                 $attribute = $requirement->getAttribute();
                 $key = array_search($attribute->getCode(), $newRequirements[$channelCode], true);
-                if (false === $key && AttributeTypes::IDENTIFIER !== $attribute->getAttributeType()) {
+                if (false === $key && AttributeTypes::IDENTIFIER !== $attribute->getType()) {
                     $family->removeAttributeRequirement($requirement);
                 } elseif (false !== $key) {
                     unset($newRequirements[$channelCode][$key]);
@@ -277,36 +278,7 @@ class FamilyUpdater implements ObjectUpdaterInterface
         $channelCode
     ) {
         $requirements = [];
-        foreach ($attributeCodes as $attributeCode) {
-            $attribute = $this->attributeRepository->findOneByIdentifier($attributeCode);
-            if (null === $attribute) {
-                throw InvalidPropertyException::validEntityCodeExpected(
-                    'attribute_requirements',
-                    'code',
-                    'The attribute does not exist',
-                    static::class,
-                    $attributeCode
-                );
-            }
-            if (AttributeTypes::IDENTIFIER !== $attribute->getAttributeType()) {
-                $requirements[] = $this->createAttributeRequirement($family, $attribute, $channelCode);
-            }
-        }
 
-        return $requirements;
-    }
-
-    /**
-     * @param FamilyInterface    $family
-     * @param AttributeInterface $attribute
-     * @param string             $channelCode
-     *
-     * @throws InvalidPropertyException
-     *
-     * @return AttributeRequirementInterface
-     */
-    protected function createAttributeRequirement(FamilyInterface $family, AttributeInterface $attribute, $channelCode)
-    {
         $channel = $this->channelRepository->findOneByIdentifier($channelCode);
         if (null === $channel) {
             throw InvalidPropertyException::validEntityCodeExpected(
@@ -318,6 +290,39 @@ class FamilyUpdater implements ObjectUpdaterInterface
             );
         }
 
+        foreach ($attributeCodes as $attributeCode) {
+            $attribute = $this->attributeRepository->findOneByIdentifier($attributeCode);
+            if (null === $attribute) {
+                throw InvalidPropertyException::validEntityCodeExpected(
+                    'attribute_requirements',
+                    'code',
+                    'The attribute does not exist',
+                    static::class,
+                    $attributeCode
+                );
+            }
+            if (AttributeTypes::IDENTIFIER !== $attribute->getType()) {
+                $requirements[] = $this->createAttributeRequirement($family, $attribute, $channel);
+            }
+        }
+
+        return $requirements;
+    }
+
+    /**
+     * @param FamilyInterface    $family
+     * @param AttributeInterface $attribute
+     * @param ChannelInterface   $channel
+     *
+     * @throws InvalidPropertyException
+     *
+     * @return AttributeRequirementInterface
+     */
+    protected function createAttributeRequirement(
+        FamilyInterface $family,
+        AttributeInterface $attribute,
+        ChannelInterface $channel
+    ) {
         $requirement = $this->requirementRepo->findOneBy(
             ['attribute' => $attribute->getId(), 'channel' => $channel->getId(), 'family' => $family->getId()]
         );
@@ -338,7 +343,7 @@ class FamilyUpdater implements ObjectUpdaterInterface
     protected function addAttributes(FamilyInterface $family, array $data)
     {
         foreach ($family->getAttributes() as $attribute) {
-            if (AttributeTypes::IDENTIFIER !== $attribute->getAttributeType()) {
+            if (AttributeTypes::IDENTIFIER !== $attribute->getType()) {
                 $family->removeAttribute($attribute);
             }
         }

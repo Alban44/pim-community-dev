@@ -16,6 +16,8 @@ use Pim\Component\Api\Pagination\HalPaginator;
 use Pim\Component\Api\Pagination\ParameterValidatorInterface;
 use Pim\Component\Catalog\Builder\ProductBuilderInterface;
 use Pim\Component\Catalog\Comparator\Filter\ProductFilterInterface;
+use Pim\Component\Catalog\Exception\InvalidOperatorException;
+use Pim\Component\Catalog\Exception\UnsupportedFilterException;
 use Pim\Component\Catalog\Model\ChannelInterface;
 use Pim\Component\Catalog\Model\ProductInterface;
 use Pim\Component\Catalog\Query\Filter\Operators;
@@ -160,37 +162,28 @@ class ProductController
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         }
 
-        $normalizerOptions = [];
         $channel = null;
-
-        if ($request->query->has('channel')) {
-            $channel = $this->channelRepository->findOneByIdentifier($request->query->get('channel'));
+        if ($request->query->has('scope')) {
+            $channel = $this->channelRepository->findOneByIdentifier($request->query->get('scope'));
             if (null === $channel) {
                 throw new UnprocessableEntityHttpException(
-                    sprintf('Channel "%s" does not exist.', $request->query->get('channel'))
+                    sprintf('Scope "%s" does not exist.', $request->query->get('scope'))
                 );
             }
-
-            $normalizerOptions['channels'] = [$channel->getCode()];
-            $normalizerOptions['locales'] = $channel->getLocaleCodes();
         }
 
-        if ($request->query->has('locales')) {
-            $this->checkLocalesParameters($request->query->get('locales'), $channel);
-
-            $normalizerOptions['locales'] = explode(',', $request->query->get('locales'));
-        }
-
-        if ($request->query->has('attributes')) {
-            $this->checkAttributesParameters($request->query->get('attributes'));
-
-            $normalizerOptions['attributes'] = explode(',', $request->query->get('attributes'));
-        }
+        $normalizerOptions = $this->getNormalizerOptions($request, $channel);
 
         $pqb = $this->pqbFactory->create([]);
-        // TODO: be able to use the PQB filters (will be done in API-65).
-        // for the moment, set an empty array
-        $this->setPQBFilters($pqb, [], $channel);
+        try {
+            $this->setPQBFilters($pqb, $request, $channel);
+        } catch (PropertyException $e) {
+            throw new UnprocessableEntityHttpException($e->getMessage(), $e);
+        } catch (UnsupportedFilterException $e) {
+            throw new UnprocessableEntityHttpException($e->getMessage(), $e);
+        } catch (InvalidOperatorException $e) {
+            throw new UnprocessableEntityHttpException($e->getMessage(), $e);
+        }
 
         $count = $this->productRepository->count($pqb->getQueryBuilder());
 
@@ -270,7 +263,46 @@ class ProductController
         $this->validateProduct($product);
         $this->saver->save($product);
 
-        $response = $this->getCreateResponse($product);
+        $response = $this->getResponse($product, Response::HTTP_CREATED);
+
+        return $response;
+    }
+
+    /**
+     * @param Request $request
+     * @param string  $code
+     *
+     * @throws BadRequestHttpException
+     *
+     * @return Response
+     */
+    public function partialUpdateAction(Request $request, $code)
+    {
+        $data = $this->getDecodedContent($request->getContent());
+
+        $isCreation = false;
+        $product = $this->productRepository->findOneByIdentifier($code);
+
+        if (null === $product) {
+            $isCreation = true;
+
+            $this->validateCodeConsistency($code, $data);
+            $data['identifier'] = $code;
+            $data = $this->populateIdentifierProductValue($data);
+
+            $product = $this->productBuilder->createProduct();
+        } else {
+            $data['identifier'] = array_key_exists('identifier', $data) ? $data['identifier'] : $code;
+            $data = $this->populateIdentifierProductValue($data);
+            $data = $this->filterEmptyValues($product, $data);
+        }
+
+        $this->updateProduct($product, $data);
+        $this->validateProduct($product);
+        $this->saver->save($product);
+
+        $status = $isCreation ? Response::HTTP_CREATED : Response::HTTP_NO_CONTENT;
+        $response = $this->getResponse($product, $status);
 
         return $response;
     }
@@ -326,6 +358,44 @@ class ProductController
     }
 
     /**
+     * Filter product's values to have only updated or new values.
+     *
+     * @param ProductInterface $product
+     * @param array            $data
+     *
+     * @throws DocumentedHttpException
+     *
+     * @return array
+     */
+    protected function filterEmptyValues(ProductInterface $product, array $data)
+    {
+        if (!isset($data['values'])) {
+            return $data;
+        }
+
+        try {
+            $dataFiltered = $this->emptyValuesFilter->filter($product, ['values' => $data['values']]);
+
+            if (!empty($dataFiltered)) {
+                $data = array_replace($data, $dataFiltered);
+            } else {
+                $data['values'] = [];
+            }
+        } catch (UnknownPropertyException $exception) {
+            throw new DocumentedHttpException(
+                $this->urlDocumentation,
+                sprintf(
+                    'Property "%s" does not exist. Check the standard format documentation.',
+                    $exception->getPropertyName()
+                ),
+                $exception
+            );
+        }
+
+        return $data;
+    }
+
+    /**
      * Validate a product. It throws an error 422 with every violated constraints if
      * the validation failed.
      *
@@ -342,15 +412,16 @@ class ProductController
     }
 
     /**
-     * Get a response with HTTP code 201 when an object is created.
+     * Get a response with a location header to the created or updated resource.
      *
      * @param ProductInterface $product
+     * @param string           $status
      *
      * @return Response
      */
-    protected function getCreateResponse(ProductInterface $product)
+    protected function getResponse(ProductInterface $product, $status)
     {
-        $response = new Response(null, Response::HTTP_CREATED);
+        $response = new Response(null, $status);
         $route = $this->router->generate('pim_api_product_get', ['code' => $product->getIdentifier()], true);
         $response->headers->set('Location', $route);
 
@@ -359,19 +430,36 @@ class ProductController
 
     /**
      * Set the PQB filters.
-     * If a channel is requested, add a filter to return only products linked to its category tree
+     * If a scope is requested, add a filter to return only products linked to its category tree
      *
      * @param ProductQueryBuilderInterface $pqb
-     * @param array                        $pqbFilters
+     * @param Request                      $request
      * @param ChannelInterface|null        $channel
+     *
+     * @throws UnprocessableEntityHttpException
      */
     protected function setPQBFilters(
         ProductQueryBuilderInterface $pqb,
-        array $pqbFilters,
+        Request $request,
         ChannelInterface $channel = null
     ) {
-        if (null !== $channel) {
-            $pqbFilters['categories'] = [
+        $search = [];
+
+        if ($request->query->has('search')) {
+            $search = json_decode($request->query->get('search'), true);
+            if (null === $search) {
+                throw new UnprocessableEntityHttpException('Search query parameter should be valid JSON.');
+            }
+
+            if (!is_array($search)) {
+                throw new UnprocessableEntityHttpException(
+                    sprintf('Search query parameter has to be an array, "%s" given.', gettype($search))
+                );
+            }
+        }
+
+        if (null !== $channel && !isset($search['categories'])) {
+            $search['categories'] = [
                 [
                     'operator' => Operators::IN_CHILDREN_LIST,
                     'value'    => [$channel->getCategory()->getCode()]
@@ -379,11 +467,67 @@ class ProductController
             ];
         }
 
-        foreach ($pqbFilters as $attributeCode => $filters) {
+        foreach ($search as $propertyCode => $filters) {
+            if (!is_array($filters) || !isset($filters[0])) {
+                throw new UnprocessableEntityHttpException(
+                    sprintf(
+                        'Structure of filter "%s" should respect this structure: %s',
+                        $propertyCode,
+                        sprintf('{"%s":[{"operator": "my_operator", "value": "my_value"}]}', $propertyCode)
+                    )
+                );
+            }
+
             foreach ($filters as $filter) {
-                $pqb->addFilter($attributeCode, $filter['operator'], $filter['value']);
+                if (!isset($filter['operator'])) {
+                    throw new UnprocessableEntityHttpException(
+                        sprintf('Operator is missing for the property "%s".', $propertyCode)
+                    );
+                }
+
+                if (!is_string($filter['operator'])) {
+                    throw new UnprocessableEntityHttpException(
+                        sprintf('Operator has to be a string, "%s" given.', gettype($filter['operator']))
+                    );
+                }
+
+                $context['locale'] = isset($filter['locale']) ? $filter['locale'] : $request->query->get('search_locale');
+                $context['scope'] = isset($filter['scope']) ? $filter['scope'] : $request->query->get('search_scope');
+                $value = isset($filter['value']) ? $filter['value'] : null;
+
+                $pqb->addFilter($propertyCode, $filter['operator'], $value, $context);
             }
         }
+    }
+
+    /**
+     * @param Request               $request
+     * @param ChannelInterface|null $channel
+     *
+     * @return array
+     */
+    protected function getNormalizerOptions(Request $request, ChannelInterface $channel = null)
+    {
+        $normalizerOptions = [];
+
+        if ($request->query->has('scope')) {
+            $normalizerOptions['channels'] = [$channel->getCode()];
+            $normalizerOptions['locales'] = $channel->getLocaleCodes();
+        }
+
+        if ($request->query->has('locales')) {
+            $this->checkLocalesParameters($request->query->get('locales'), $channel);
+
+            $normalizerOptions['locales'] = explode(',', $request->query->get('locales'));
+        }
+
+        if ($request->query->has('attributes')) {
+            $this->checkAttributesParameters($request->query->get('attributes'));
+
+            $normalizerOptions['attributes'] = explode(',', $request->query->get('attributes'));
+        }
+
+        return $normalizerOptions;
     }
 
     /**
@@ -415,7 +559,7 @@ class ProductController
             if ($diff = array_diff($locales, $channel->getLocaleCodes())) {
                 $plural = sprintf(count($diff) > 1 ? 'Locales "%s" are' : 'Locale "%s" is', implode(', ', $diff));
                 throw new UnprocessableEntityHttpException(
-                    sprintf('%s not activated for the channel "%s".', $plural, $channel->getCode())
+                    sprintf('%s not activated for the scope "%s".', $plural, $channel->getCode())
                 );
             }
         }
@@ -467,5 +611,29 @@ class ProductController
         ];
 
         return $data;
+    }
+
+    /**
+     * Throw an exception if the code provided in the url and the identifier provided in the request body
+     * are not equals when creating a product with a PATCH method.
+     *
+     * The identifier in the request body is optional when we create a resource with PATCH.
+     *
+     * @param string $code code provided in the url
+     * @param array  $data body of the request already decoded
+     *
+     * @throws UnprocessableEntityHttpException
+     */
+    protected function validateCodeConsistency($code, array $data)
+    {
+        if (array_key_exists('identifier', $data) && $code !== $data['identifier']) {
+            throw new UnprocessableEntityHttpException(
+                sprintf(
+                    'The identifier "%s" provided in the request body must match the identifier "%s" provided in the url.',
+                    $data['identifier'],
+                    $code
+                )
+            );
+        }
     }
 }
