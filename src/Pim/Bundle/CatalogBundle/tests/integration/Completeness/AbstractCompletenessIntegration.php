@@ -88,6 +88,7 @@ abstract class AbstractCompletenessIntegration extends TestCase
         foreach ($localesSpecific as $locale) {
             $attribute->addAvailableLocale($locale);
         }
+        $this->get('pim_catalog.saver.attribute')->save($attribute);
 
         $requirement = $this->get('pim_catalog.factory.attribute_requirement')
             ->createAttributeRequirement($attribute, $channel, true);
