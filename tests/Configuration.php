@@ -115,6 +115,16 @@ class Configuration
     /**
      * @return string
      */
+    public static function getReferenceDataFixtures()
+    {
+        return realpath(self::getRootDirectory() . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Acme' .
+            DIRECTORY_SEPARATOR . 'Bundle' . DIRECTORY_SEPARATOR . 'AppBundle' . DIRECTORY_SEPARATOR . 'Resources' .
+            DIRECTORY_SEPARATOR . 'fixtures');
+    }
+
+    /**
+     * @return string
+     */
     private static function getRootDirectory()
     {
         return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR);

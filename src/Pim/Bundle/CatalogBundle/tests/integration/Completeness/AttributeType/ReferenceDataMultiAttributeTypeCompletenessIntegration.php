@@ -2,7 +2,9 @@
 
 namespace Pim\Bundle\CatalogBundle\tests\integration\Completeness\AttributeType;
 
+use Akeneo\Test\Integration\Configuration;
 use Pim\Bundle\CatalogBundle\tests\integration\Completeness\AbstractCompletenessPerAttributeTypeIntegration;
+use Pim\Component\Catalog\AttributeTypes;
 
 /**
  * Checks that the completeness has been well calculated for multi reference data attribute type.
@@ -13,8 +15,105 @@ use Pim\Bundle\CatalogBundle\tests\integration\Completeness\AbstractCompleteness
  */
 class ReferenceDataMultiAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testReferenceDataMulti()
+    public function testMultiSelectReferenceData()
     {
-        //
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_multi_select_reference_data',
+            AttributeTypes::REFERENCE_DATA_MULTI_SELECT
+        );
+
+        $productFull = $this->createProductWithStandardValues(
+            $family,
+            'product_full',
+            [
+                'values' => [
+                    'a_multi_select_reference_data' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => ['zorbeez'],
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+
+        $this->assertComplete($productFull);
+    }
+
+    public function testEmptyMultiSelectReferenceData()
+    {
+        $family = $this->createFamilyWithRequirement(
+            'another_family',
+            'ecommerce',
+            'a_multi_select_reference_data',
+            AttributeTypes::REFERENCE_DATA_MULTI_SELECT
+        );
+
+//        TODO: This cannot work now, but will on TIP-613. Test is added now so it will not forgotten.
+//        $productNull = $this->createProductWithStandardValues(
+//            $family,
+//            'product_empty',
+//            [
+//                'values' => [
+//                    'a_multi_select_reference_data' => [
+//                        [
+//                            'locale' => null,
+//                            'scope'  => null,
+//                            'data'   => null,
+//                        ],
+//                    ],
+//                ],
+//            ]
+//        );
+
+        $productEmpty = $this->createProductWithStandardValues(
+            $family,
+            'product_empty',
+            [
+                'values' => [
+                    'a_multi_select_reference_data' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => [],
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+        $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
+
+        //$this->assertNotComplete($productNull);
+        $this->assertNotComplete($productEmpty);
+        $this->assertNotComplete($productWithoutValues);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function createAttribute($code, $type)
+    {
+        $attribute = parent::createAttribute($code, $type);
+
+        $attribute->setReferenceDataName('fabrics');
+        $this->get('pim_catalog.saver.attribute')->save($attribute);
+
+        return $attribute;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getConfiguration()
+    {
+        return new Configuration(
+            [Configuration::getMinimalCatalogPath(), Configuration::getReferenceDataFixtures()],
+            true
+        );
     }
 }
