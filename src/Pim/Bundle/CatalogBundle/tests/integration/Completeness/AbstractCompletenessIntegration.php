@@ -33,7 +33,7 @@ abstract class AbstractCompletenessIntegration extends TestCase
      *
      * @return AttributeInterface
      */
-    private function createAttribute($code, $type)
+    protected function createAttribute($code, $type)
     {
         $attributeFactory = $this->get('pim_catalog.factory.attribute');
         $attributeSaver = $this->get('pim_catalog.saver.attribute');
