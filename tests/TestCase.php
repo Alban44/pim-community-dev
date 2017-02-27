@@ -38,13 +38,13 @@ abstract class TestCase extends KernelTestCase
 
         self::$count++;
 
-        if ($configuration->isDatabasePurgedForEachTest() || 1 === self::$count) {
+       // if ($configuration->isDatabasePurgedForEachTest() || 1 === self::$count) {
             $databasePurger = $this->getDatabasePurger();
             $databasePurger->purge();
 
             $fixturesLoader = $this->getFixturesLoader($configuration);
             $fixturesLoader->load();
-        }
+        //}
     }
 
     /**
