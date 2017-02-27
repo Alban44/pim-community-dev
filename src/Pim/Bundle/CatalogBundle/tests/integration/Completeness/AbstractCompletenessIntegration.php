@@ -30,16 +30,30 @@ abstract class AbstractCompletenessIntegration extends TestCase
     /**
      * @param string $code
      * @param string $type
+     * @param bool   $localisable
+     * @param bool   $scopable
+     * @param array  $localesSpecific
      *
      * @return AttributeInterface
      */
-    protected function createAttribute($code, $type)
-    {
+    protected function createAttribute(
+        $code,
+        $type,
+        $localisable = false,
+        $scopable = false,
+        array $localesSpecific = []
+    ) {
         $attributeFactory = $this->get('pim_catalog.factory.attribute');
         $attributeSaver = $this->get('pim_catalog.saver.attribute');
 
         $attribute = $attributeFactory->createAttribute($type);
         $attribute->setCode($code);
+        $attribute->setLocalizable($localisable);
+        $attribute->setScopable($scopable);
+        foreach ($localesSpecific as $locale) {
+            $attribute->addAvailableLocale($locale);
+        }
+
         $attributeSaver->save($attribute);
 
         return $attribute;
@@ -62,12 +76,12 @@ abstract class AbstractCompletenessIntegration extends TestCase
     }
 
     /**
-     * @param string            $familyCode
-     * @param string            $channelCode
-     * @param string            $attributeCode
-     * @param string            $attributeType
-     * @param bool              $localisable
-     * @param bool              $scopable
+     * @param string $familyCode
+     * @param string $channelCode
+     * @param string $attributeCode
+     * @param string $attributeType
+     * @param bool $localisable
+     * @param bool $scopable
      * @param LocaleInterface[] $localesSpecific
      *
      * @return FamilyInterface
@@ -82,12 +96,7 @@ abstract class AbstractCompletenessIntegration extends TestCase
         array $localesSpecific = []
     ) {
         $channel = $this->get('pim_catalog.repository.channel')->findOneByIdentifier($channelCode);
-        $attribute = $this->createAttribute($attributeCode, $attributeType);
-        $attribute->setLocalizable($localisable);
-        $attribute->setScopable($scopable);
-        foreach ($localesSpecific as $locale) {
-            $attribute->addAvailableLocale($locale);
-        }
+        $attribute = $this->createAttribute($attributeCode, $attributeType, $localisable, $scopable, $localesSpecific);
         $this->get('pim_catalog.saver.attribute')->save($attribute);
 
         $requirement = $this->get('pim_catalog.factory.attribute_requirement')
