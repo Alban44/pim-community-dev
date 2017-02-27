@@ -38,18 +38,7 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                 ],
             ]
         );
-
         $this->assertComplete($productComplete);
-    }
-
-    public function testCompleteWithZero()
-    {
-        $family = $this->createFamilyWithRequirement(
-            'another_family',
-            'ecommerce',
-            'a_number_integer',
-            AttributeTypes::NUMBER
-        );
 
         $productCompleteWithZero = $this->createProductWithStandardValues(
             $family,
@@ -66,7 +55,6 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                 ],
             ]
         );
-
         $this->assertComplete($productCompleteWithZero);
     }
 

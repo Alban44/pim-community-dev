@@ -16,7 +16,7 @@ use Pim\Component\Catalog\Model\ProductInterface;
  *      - 1 localisable attribute
  *      - 1 locale specific attribute
  *
- * For each test, the we create a family where the attribute is required.
+ * For each test, we create a family where the attribute is required.
  * Then, we create two products of this family, one with the required attribute filled in, the other without.
  * Finally we test the completeness calculation of those two products.
  *

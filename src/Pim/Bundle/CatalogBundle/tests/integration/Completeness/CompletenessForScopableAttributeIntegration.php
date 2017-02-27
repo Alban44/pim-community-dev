@@ -10,7 +10,7 @@ use Pim\Component\Catalog\Model\ProductInterface;
  *
  * We test from the minimal catalog that contains only one channel, with one locale activated.
  *
- * For each test, the we create a family where the scopable attribute is required.
+ * For each test, we create a family where the scopable attribute is required.
  *
  * @author    Julien Janvier <j.janvier@gmail.com>
  * @copyright 2017 Akeneo SAS (http://www.akeneo.com)
