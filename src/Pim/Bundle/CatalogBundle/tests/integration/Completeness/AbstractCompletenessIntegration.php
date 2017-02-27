@@ -97,7 +97,6 @@ abstract class AbstractCompletenessIntegration extends TestCase
     ) {
         $channel = $this->get('pim_catalog.repository.channel')->findOneByIdentifier($channelCode);
         $attribute = $this->createAttribute($attributeCode, $attributeType, $localisable, $scopable, $localesSpecific);
-        $this->get('pim_catalog.saver.attribute')->save($attribute);
 
         $requirement = $this->get('pim_catalog.factory.attribute_requirement')
             ->createAttributeRequirement($attribute, $channel, true);
