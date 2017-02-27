@@ -74,7 +74,7 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
         $this->assertNotComplete($product, 'fr_FR', 2);
     }
 
-    public function testLocaleSpecificNoLocale()
+    public function testNotCompleteLocaleSpecificNoLocale()
     {
         $fr = $this->get('pim_catalog.repository.locale')->findOneByIdentifier('fr_FR');
 
@@ -88,12 +88,12 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
             [$fr]
         );
 
-        $productEmptyNoLocale = $this->createProductWithStandardValues($family, 'product_empty_no_locale');
-        $this->assertNotComplete($productEmptyNoLocale, 'fr_FR', 2);
-        $this->assertComplete($productEmptyNoLocale, 'en_US', 1);
+        $productLocaleSpecificNoLocale = $this->createProductWithStandardValues($family, 'product_locale_specific_no_locale');
+        $this->assertNotComplete($productLocaleSpecificNoLocale, 'fr_FR', 2);
+        $this->assertComplete($productLocaleSpecificNoLocale, 'en_US', 1);
     }
 
-    public function testLocaleSpecificLocaleEmpty()
+    public function testNotCompleteLocaleSpecificLocaleEmpty()
     {
         $fr = $this->get('pim_catalog.repository.locale')->findOneByIdentifier('fr_FR');
 
@@ -107,9 +107,9 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
             [$fr]
         );
 
-        $productEmptyLocaleEmpty = $this->createProductWithStandardValues(
+        $productLocaleSoecificLocaleEmpty = $this->createProductWithStandardValues(
             $family,
-            'product_empty_locale_empty',
+            'product_locale_specific_locale_empty',
             [
                 'values' => [
                     'a_text' => [
@@ -122,11 +122,11 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
                 ]
             ]
         );
-        $this->assertNotComplete($productEmptyLocaleEmpty, 'fr_FR', 2);
-        $this->assertComplete($productEmptyLocaleEmpty, 'en_US', 1);
+        $this->assertNotComplete($productLocaleSoecificLocaleEmpty, 'fr_FR', 2);
+        $this->assertComplete($productLocaleSoecificLocaleEmpty, 'en_US', 1);
     }
 
-    public function testLocaleSpecificComplete()
+    public function testCompleteLocaleSpecific()
     {
         $fr = $this->get('pim_catalog.repository.locale')->findOneByIdentifier('fr_FR');
 
@@ -140,9 +140,9 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
             [$fr]
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_text' => [
@@ -155,8 +155,8 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
                 ]
             ]
         );
-        $this->assertComplete($productFull, 'fr_FR', 2);
-        $this->assertComplete($productFull, 'en_US', 1);
+        $this->assertComplete($productComplete, 'fr_FR', 2);
+        $this->assertComplete($productComplete, 'en_US', 1);
     }
 
     /**

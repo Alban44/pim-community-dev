@@ -14,7 +14,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class TextareaAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testTextarea()
+    public function testCompleteTextarea()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -23,9 +23,9 @@ class TextareaAttributeTypeCompletenessIntegration extends AbstractCompletenessP
             AttributeTypes::TEXTAREA
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_text_area' => [
@@ -39,10 +39,10 @@ class TextareaAttributeTypeCompletenessIntegration extends AbstractCompletenessP
             ]
         );
 
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testEmptyTextarea()
+    public function testNotCompleteTextarea()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -51,9 +51,9 @@ class TextareaAttributeTypeCompletenessIntegration extends AbstractCompletenessP
             AttributeTypes::TEXTAREA
         );
 
-        $productNull = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
-            'product_null',
+            'product_data_null',
             [
                 'values' => [
                     'a_text_area' => [
@@ -66,10 +66,11 @@ class TextareaAttributeTypeCompletenessIntegration extends AbstractCompletenessP
                 ],
             ]
         );
+        $this->assertNotComplete($productDataNull);
 
-        $productEmpty = $this->createProductWithStandardValues(
+        $productDataEmptyString = $this->createProductWithStandardValues(
             $family,
-            'product_empty',
+            'product_data_empty_string',
             [
                 'values' => [
                     'a_text_area' => [
@@ -82,11 +83,9 @@ class TextareaAttributeTypeCompletenessIntegration extends AbstractCompletenessP
                 ],
             ]
         );
+        $this->assertNotComplete($productDataEmptyString);
 
         $productWithoutValue = $this->createProductWithStandardValues($family, 'product_without_values');
-
-        $this->assertNotComplete($productNull);
-        $this->assertNotComplete($productEmpty);
         $this->assertNotComplete($productWithoutValue);
     }
 }

@@ -14,7 +14,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class TextAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testText()
+    public function testCompleteText()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -23,9 +23,9 @@ class TextAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             AttributeTypes::TEXT
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_text' => [
@@ -39,10 +39,10 @@ class TextAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             ]
         );
 
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testEmptyText()
+    public function testNotCompleteText()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -51,9 +51,9 @@ class TextAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             AttributeTypes::TEXT
         );
 
-        $productNull = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
-            'product_null',
+            'product_data_null',
             [
                 'values' => [
                     'a_text' => [
@@ -66,10 +66,11 @@ class TextAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
                 ],
             ]
         );
+        $this->assertNotComplete($productDataNull);
 
-        $productEmpty = $this->createProductWithStandardValues(
+        $productDataEmptyString = $this->createProductWithStandardValues(
             $family,
-            'product_empty',
+            'product_data_empty_string',
             [
                 'values' => [
                     'a_text' => [
@@ -82,11 +83,9 @@ class TextAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
                 ],
             ]
         );
+        $this->assertNotComplete($productDataEmptyString);
 
         $productWithoutValue = $this->createProductWithStandardValues($family, 'product_without_values');
-
-        $this->assertNotComplete($productNull);
-        $this->assertNotComplete($productEmpty);
         $this->assertNotComplete($productWithoutValue);
     }
 }

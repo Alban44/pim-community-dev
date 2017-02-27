@@ -15,7 +15,7 @@ use Pim\Component\Catalog\Model\ProductInterface;
  */
 class BooleanAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testBoolean()
+    public function testCompleteBoolean()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -24,9 +24,9 @@ class BooleanAttributeTypeCompletenessIntegration extends AbstractCompletenessPe
             AttributeTypes::BOOLEAN
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_boolean' => [
@@ -41,10 +41,10 @@ class BooleanAttributeTypeCompletenessIntegration extends AbstractCompletenessPe
         );
 
 
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testEmptyBoolean()
+    public function testNotCompleteBoolean()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -53,9 +53,9 @@ class BooleanAttributeTypeCompletenessIntegration extends AbstractCompletenessPe
             AttributeTypes::BOOLEAN
         );
 
-        $productEmpty = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
-            'product_empty',
+            'product_data_null',
             [
                 'values' => [
                     'a_boolean' => [
@@ -68,11 +68,9 @@ class BooleanAttributeTypeCompletenessIntegration extends AbstractCompletenessPe
                 ],
             ]
         );
+        $this->assertNotComplete($productDataNull);
 
         $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
-
-        $this->assertNotComplete($productEmpty);
-
         // TODO: This is not as it should be, but inevitable because of PIM-6056
         // TODO: When PIM-6056 is fixed, we should be able to use "assertNotComplete"
         $this->assertComplete($productWithoutValues);

@@ -15,7 +15,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class ReferenceDataSimpleAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testSimpleSelectReferenceData()
+    public function testCompleteSimpleSelectReferenceData()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -24,9 +24,9 @@ class ReferenceDataSimpleAttributeTypeCompletenessIntegration extends AbstractCo
             AttributeTypes::REFERENCE_DATA_SIMPLE_SELECT
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_simple_select_reference_data' => [
@@ -41,10 +41,10 @@ class ReferenceDataSimpleAttributeTypeCompletenessIntegration extends AbstractCo
         );
 
 
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testEmptySimpleSelectReferenceData()
+    public function testNotCompleteSimpleSelectReferenceData()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -53,9 +53,9 @@ class ReferenceDataSimpleAttributeTypeCompletenessIntegration extends AbstractCo
             AttributeTypes::REFERENCE_DATA_SIMPLE_SELECT
         );
 
-        $productNull = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
-            'product_empty',
+            'product_data_null',
             [
                 'values' => [
                     'a_simple_select_reference_data' => [
@@ -68,10 +68,11 @@ class ReferenceDataSimpleAttributeTypeCompletenessIntegration extends AbstractCo
                 ],
             ]
         );
+        $this->assertNotComplete($productDataNull);
 
-        $productEmpty = $this->createProductWithStandardValues(
+        $productDataEmptyString = $this->createProductWithStandardValues(
             $family,
-            'product_empty',
+            'product_data_empty_string',
             [
                 'values' => [
                     'a_simple_select_reference_data' => [
@@ -84,11 +85,9 @@ class ReferenceDataSimpleAttributeTypeCompletenessIntegration extends AbstractCo
                 ],
             ]
         );
+        $this->assertNotComplete($productDataEmptyString);
 
         $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
-
-        $this->assertNotComplete($productNull);
-        $this->assertNotComplete($productEmpty);
         $this->assertNotComplete($productWithoutValues);
     }
 

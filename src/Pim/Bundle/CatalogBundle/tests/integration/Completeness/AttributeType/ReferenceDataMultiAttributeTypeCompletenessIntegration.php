@@ -15,7 +15,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class ReferenceDataMultiAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testMultiSelectReferenceData()
+    public function testCompleteMultiSelectReferenceData()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -24,9 +24,9 @@ class ReferenceDataMultiAttributeTypeCompletenessIntegration extends AbstractCom
             AttributeTypes::REFERENCE_DATA_MULTI_SELECT
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_multi_select_reference_data' => [
@@ -41,10 +41,10 @@ class ReferenceDataMultiAttributeTypeCompletenessIntegration extends AbstractCom
         );
 
 
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testEmptyMultiSelectReferenceData()
+    public function testNotCompleteMultiSelectReferenceData()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -54,9 +54,9 @@ class ReferenceDataMultiAttributeTypeCompletenessIntegration extends AbstractCom
         );
 
 //        TODO: This cannot work now, but will on TIP-613. Test is added now so it will not forgotten.
-//        $productNull = $this->createProductWithStandardValues(
+//        $productDataNull = $this->createProductWithStandardValues(
 //            $family,
-//            'product_empty',
+//            'product_data_null',
 //            [
 //                'values' => [
 //                    'a_multi_select_reference_data' => [
@@ -69,10 +69,11 @@ class ReferenceDataMultiAttributeTypeCompletenessIntegration extends AbstractCom
 //                ],
 //            ]
 //        );
+//        $this->assertNotComplete($productDataNull);
 
-        $productEmpty = $this->createProductWithStandardValues(
+        $productDataEmptyArray = $this->createProductWithStandardValues(
             $family,
-            'product_empty',
+            'product_data_empty_array',
             [
                 'values' => [
                     'a_multi_select_reference_data' => [
@@ -85,11 +86,9 @@ class ReferenceDataMultiAttributeTypeCompletenessIntegration extends AbstractCom
                 ],
             ]
         );
+        $this->assertNotComplete($productDataEmptyArray);
 
         $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
-
-        //$this->assertNotComplete($productNull);
-        $this->assertNotComplete($productEmpty);
         $this->assertNotComplete($productWithoutValues);
     }
 

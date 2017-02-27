@@ -14,7 +14,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class MetricAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testMetric()
+    public function testCompleteMetric()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -25,9 +25,9 @@ class MetricAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
 
         $this->configureMetricFamilyForAttribute('a_metric', 'Length');
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_metric' => [
@@ -40,11 +40,11 @@ class MetricAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                 ],
             ]
         );
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
 
-        $productZeroAmount = $this->createProductWithStandardValues(
+        $productAmountZero = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_amount_zero',
             [
                 'values' => [
                     'a_metric' => [
@@ -57,10 +57,10 @@ class MetricAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                 ],
             ]
         );
-        $this->assertComplete($productZeroAmount);
+        $this->assertComplete($productAmountZero);
     }
 
-    public function testIncompleteMetric()
+    public function testNotCompleteMetric()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -71,9 +71,9 @@ class MetricAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
 
         $this->configureMetricFamilyForAttribute('a_metric', 'Length');
 
-        $productNullData = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_data_null',
             [
                 'values' => [
                     'a_metric' => [
@@ -86,11 +86,11 @@ class MetricAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                 ],
             ]
         );
-        $this->assertNotComplete($productNullData);
+        $this->assertNotComplete($productDataNull);
 
-        $productNullAmount = $this->createProductWithStandardValues(
+        $productAmountNull = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_amount_null',
             [
                 'values' => [
                     'a_metric' => [
@@ -103,11 +103,11 @@ class MetricAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                 ],
             ]
         );
-        $this->assertNotComplete($productNullAmount);
+        $this->assertNotComplete($productAmountNull);
 
-        $productNullAmountAndUnit = $this->createProductWithStandardValues(
+        $productAmountAndUnitNull = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_amount_and_unit_null',
             [
                 'values' => [
                     'a_metric' => [
@@ -120,7 +120,7 @@ class MetricAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                 ],
             ]
         );
-        $this->assertNotComplete($productNullAmountAndUnit);
+        $this->assertNotComplete($productAmountAndUnitNull);
     }
 
     private function configureMetricFamilyForAttribute($code, $metricFamily)

@@ -14,7 +14,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class ImageAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testImage()
+    public function testCompleteImage()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -23,9 +23,9 @@ class ImageAttributeTypeCompletenessIntegration extends AbstractCompletenessPerA
             AttributeTypes::IMAGE
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'an_image' => [
@@ -39,10 +39,10 @@ class ImageAttributeTypeCompletenessIntegration extends AbstractCompletenessPerA
             ]
         );
 
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testEmptyImage()
+    public function testNotCompleteImage()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -51,7 +51,7 @@ class ImageAttributeTypeCompletenessIntegration extends AbstractCompletenessPerA
             AttributeTypes::IMAGE
         );
 
-        $productEmpty = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
             'product_empty',
             [
@@ -66,10 +66,9 @@ class ImageAttributeTypeCompletenessIntegration extends AbstractCompletenessPerA
                 ],
             ]
         );
+        $this->assertNotComplete($productDataNull);
 
         $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
-
-        $this->assertNotComplete($productEmpty);
         $this->assertNotComplete($productWithoutValues);
     }
 }

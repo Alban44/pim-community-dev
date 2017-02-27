@@ -14,7 +14,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testPriceCollection()
+    public function testCompletePriceCollection()
     {
         $this->addCurrencyToChannel('EUR', 'ecommerce');
 
@@ -25,9 +25,9 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
             AttributeTypes::PRICE_COLLECTION
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_price_collection' => [
@@ -49,11 +49,36 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
                 ],
             ]
         );
+        $this->assertComplete($productComplete);
 
-        $this->assertComplete($productFull);
+        $productAmountsZero = $this->createProductWithStandardValues(
+            $family,
+            'product_complete',
+            [
+                'values' => [
+                    'a_price_collection' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => [
+                                [
+                                    'amount'   => 0,
+                                    'currency' => 'USD',
+                                ],
+                                [
+                                    'amount'   => 0,
+                                    'currency' => 'EUR',
+                                ],
+                            ],
+                        ],
+                    ]
+                ],
+            ]
+        );
+        $this->assertComplete($productAmountsZero);
     }
 
-    public function testEmptyPriceCollection()
+    public function testNotCompletePriceCollection()
     {
         $this->addCurrencyToChannel('EUR', 'ecommerce');
 
@@ -64,11 +89,12 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
             AttributeTypes::PRICE_COLLECTION
         );
 
-        $productEmptyNoCurrency = $this->createProductWithStandardValues($family, 'product_empty_no_currency');
+        $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
+        $this->assertNotComplete($productWithoutValues);
 
-        $productEmptyCurrencies = $this->createProductWithStandardValues(
+        $productAmountsNull = $this->createProductWithStandardValues(
             $family,
-            'product_empty_currencies',
+            'product_amounts_null',
             [
                 'values' => [
                     'a_price_collection' => [
@@ -90,10 +116,37 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
                 ],
             ]
         );
+        $this->assertNotComplete($productAmountsNull);
 
-        $productEmptyMissingCurrency = $this->createProductWithStandardValues(
+        $productAmountNull = $this->createProductWithStandardValues(
             $family,
-            'product_empty_missing_currency',
+            'product_amount_null',
+            [
+                'values' => [
+                    'a_price_collection' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => [
+                                [
+                                    'amount'   => 7,
+                                    'currency' => 'USD',
+                                ],
+                                [
+                                    'amount'   => null,
+                                    'currency' => 'EUR',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ]
+        );
+        $this->assertNotComplete($productAmountNull);
+
+        $productMissingPrice = $this->createProductWithStandardValues(
+            $family,
+            'product_missing_price',
             [
                 'values' => [
                     'a_price_collection' => [
@@ -111,10 +164,7 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
                 ],
             ]
         );
-
-        $this->assertNotComplete($productEmptyNoCurrency);
-        $this->assertNotComplete($productEmptyCurrencies);
-        $this->assertNotComplete($productEmptyMissingCurrency);
+        $this->assertNotComplete($productMissingPrice);
     }
 
     /**

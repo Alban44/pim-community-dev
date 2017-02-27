@@ -20,7 +20,7 @@ class IdentifierAttributeTypeCompletenessIntegration extends AbstractCompletenes
     {
         $family = $this->createFamily('another_family');
 
-        $product = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
             'product_complete',
             [
@@ -36,7 +36,7 @@ class IdentifierAttributeTypeCompletenessIntegration extends AbstractCompletenes
             ]
         );
 
-        $this->assertComplete($product);
+        $this->assertComplete($productComplete);
     }
 
     /**

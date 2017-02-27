@@ -14,7 +14,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class FileAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testFile()
+    public function testCompleteFile()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -23,9 +23,9 @@ class FileAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             AttributeTypes::FILE
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_file' => [
@@ -39,10 +39,10 @@ class FileAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             ]
         );
 
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testEmptyFile()
+    public function testNotCompleteFile()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -51,9 +51,9 @@ class FileAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             AttributeTypes::FILE
         );
 
-        $productEmpty = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
-            'product_empty',
+            'product_data_null',
             [
                 'values' => [
                     'a_file' => [
@@ -66,10 +66,9 @@ class FileAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
                 ],
             ]
         );
+        $this->assertNotComplete($productDataNull);
 
         $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
-
-        $this->assertNotComplete($productEmpty);
         $this->assertNotComplete($productWithoutValues);
     }
 }

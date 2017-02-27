@@ -14,7 +14,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testNumber()
+    public function testCompleteNumber()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -23,9 +23,9 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
             AttributeTypes::NUMBER
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_number_integer' => [
@@ -39,10 +39,10 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
             ]
         );
 
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testZero()
+    public function testCompleteWithZero()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -51,9 +51,9 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
             AttributeTypes::NUMBER
         );
 
-        $productFullWithZero = $this->createProductWithStandardValues(
+        $productCompleteWithZero = $this->createProductWithStandardValues(
             $family,
-            'product_full_with_zero',
+            'product_complete_with_zero',
             [
                 'values' => [
                     'a_number_integer' => [
@@ -67,10 +67,10 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
             ]
         );
 
-        $this->assertComplete($productFullWithZero);
+        $this->assertComplete($productCompleteWithZero);
     }
 
-    public function testEmptyNumber()
+    public function testNotCompleteNumber()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -79,9 +79,9 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
             AttributeTypes::NUMBER
         );
 
-        $productEmpty = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
-            'product_empty',
+            'product_data_null',
             [
                 'values' => [
                     'a_number_integer' => [
@@ -94,10 +94,9 @@ class NumberAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
                 ],
             ]
         );
+        $this->assertNotComplete($productDataNull);
 
         $productWithoutValue = $this->createProductWithStandardValues($family, 'product_without_values');
-
-        $this->assertNotComplete($productEmpty);
         $this->assertNotComplete($productWithoutValue);
     }
 }

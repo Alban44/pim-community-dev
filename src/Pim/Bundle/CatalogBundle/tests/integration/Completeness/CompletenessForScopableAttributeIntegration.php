@@ -18,7 +18,7 @@ use Pim\Component\Catalog\Model\ProductInterface;
  */
 class CompletenessForScopableAttributeIntegration extends AbstractCompletenessIntegration
 {
-    public function testScopableComplete()
+    public function testCompleteScopable()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -48,7 +48,7 @@ class CompletenessForScopableAttributeIntegration extends AbstractCompletenessIn
         $this->assertComplete($product, 'ecommerce');
     }
 
-    public function testScopableNotComplete()
+    public function testNotCompleteScopable()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -59,12 +59,12 @@ class CompletenessForScopableAttributeIntegration extends AbstractCompletenessIn
             true
         );
 
+        $productWithoutValues = $this->createProductWithStandardValues($family, 'product_witout_values');
+        $this->assertNotComplete($productWithoutValues, 'ecommerce');
 
-        $productNoValue = $this->createProductWithStandardValues($family, 'product_no_value');
-
-        $productValueEmpty = $this->createProductWithStandardValues(
+        $productDataEmpty = $this->createProductWithStandardValues(
             $family,
-            'product_value_empty',
+            'product_data_empty',
             [
                 'values' => [
                     'a_text' => [
@@ -77,9 +77,7 @@ class CompletenessForScopableAttributeIntegration extends AbstractCompletenessIn
                 ]
             ]
         );
-
-        $this->assertNotComplete($productNoValue, 'ecommerce');
-        $this->assertNotComplete($productValueEmpty, 'ecommerce');
+        $this->assertNotComplete($productDataEmpty, 'ecommerce');
     }
 
     /**

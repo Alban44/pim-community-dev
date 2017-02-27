@@ -38,13 +38,13 @@ class OptionAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
         $optionSaver->save($redOption);
     }
 
-    public function testOption()
+    public function testCompleteOption()
     {
         $family = $this->get('pim_catalog.repository.family')->findOneByIdentifier('simple_select_family');
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_simple_select' => [
@@ -58,14 +58,14 @@ class OptionAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
             ]
         );
 
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testEmptyOption()
+    public function testNotCompleteOption()
     {
         $family = $this->get('pim_catalog.repository.family')->findOneByIdentifier('simple_select_family');
 
-        $productNull = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
             'product_null',
             [
@@ -81,6 +81,6 @@ class OptionAttributeTypeCompletenessIntegration extends AbstractCompletenessPer
             ]
         );
 
-        $this->assertNotComplete($productNull);
+        $this->assertNotComplete($productDataNull);
     }
 }

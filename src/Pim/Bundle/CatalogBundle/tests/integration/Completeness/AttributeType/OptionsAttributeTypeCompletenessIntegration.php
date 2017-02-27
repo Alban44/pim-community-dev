@@ -13,7 +13,7 @@ use Pim\Bundle\CatalogBundle\tests\integration\Completeness\AbstractCompleteness
  */
 class OptionsAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testOptions()
+    public function testCompleteOptions()
     {
         //
     }

@@ -14,7 +14,7 @@ use Pim\Component\Catalog\AttributeTypes;
  */
 class DateAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAttributeTypeIntegration
 {
-    public function testDate()
+    public function testCompleteDate()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -23,9 +23,9 @@ class DateAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             AttributeTypes::DATE
         );
 
-        $productFull = $this->createProductWithStandardValues(
+        $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_full',
+            'product_complete',
             [
                 'values' => [
                     'a_date' => [
@@ -39,11 +39,10 @@ class DateAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             ]
         );
 
-
-        $this->assertComplete($productFull);
+        $this->assertComplete($productComplete);
     }
 
-    public function testEmptyDate()
+    public function testNotCompleteDate()
     {
         $family = $this->createFamilyWithRequirement(
             'another_family',
@@ -52,9 +51,9 @@ class DateAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
             AttributeTypes::DATE
         );
 
-        $productEmpty = $this->createProductWithStandardValues(
+        $productDataNull = $this->createProductWithStandardValues(
             $family,
-            'product_empty',
+            'product_data_null',
             [
                 'values' => [
                     'a_date' => [
@@ -67,10 +66,9 @@ class DateAttributeTypeCompletenessIntegration extends AbstractCompletenessPerAt
                 ],
             ]
         );
+        $this->assertNotComplete($productDataNull);
 
         $productWithoutValues = $this->createProductWithStandardValues($family, 'product_without_values');
-
-        $this->assertNotComplete($productEmpty);
         $this->assertNotComplete($productWithoutValues);
     }
 }
