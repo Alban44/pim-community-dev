@@ -95,8 +95,13 @@ class ReferenceDataMultiAttributeTypeCompletenessIntegration extends AbstractCom
     /**
      * {@inheritdoc}
      */
-    protected function createAttribute($code, $type)
-    {
+    protected function createAttribute(
+        $code,
+        $type,
+        $localisable = false,
+        $scopable = false,
+        array $localesSpecific = []
+    ) {
         $attribute = parent::createAttribute($code, $type);
 
         $attribute->setReferenceDataName('fabrics');

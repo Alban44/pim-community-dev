@@ -94,8 +94,13 @@ class ReferenceDataSimpleAttributeTypeCompletenessIntegration extends AbstractCo
     /**
      * {@inheritdoc}
      */
-    protected function createAttribute($code, $type)
-    {
+    protected function createAttribute(
+        $code,
+        $type,
+        $localisable = false,
+        $scopable = false,
+        array $localesSpecific = []
+    ) {
         $attribute = parent::createAttribute($code, $type);
 
         $attribute->setReferenceDataName('color');
