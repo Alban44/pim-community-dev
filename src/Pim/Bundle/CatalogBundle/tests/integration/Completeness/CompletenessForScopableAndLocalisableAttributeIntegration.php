@@ -42,7 +42,7 @@ class CompletenessForScopableAndLocalisableAttributeIntegration extends Abstract
             DIRECTORY_SEPARATOR . 'Context' . DIRECTORY_SEPARATOR .'catalog'. DIRECTORY_SEPARATOR .'footwear';
 
         return new Configuration(
-            [$path],
+            [realpath($path)],
             true
         );
     }
