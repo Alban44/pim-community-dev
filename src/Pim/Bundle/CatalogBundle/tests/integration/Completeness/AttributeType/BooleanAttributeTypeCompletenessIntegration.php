@@ -26,7 +26,7 @@ class BooleanAttributeTypeCompletenessIntegration extends AbstractCompletenessPe
 
         $productComplete = $this->createProductWithStandardValues(
             $family,
-            'product_complete',
+            'product_complete_true',
             [
                 'values' => [
                     'a_boolean' => [
@@ -39,9 +39,24 @@ class BooleanAttributeTypeCompletenessIntegration extends AbstractCompletenessPe
                 ],
             ]
         );
-
-
         $this->assertComplete($productComplete);
+
+        $productCompleteFalse = $this->createProductWithStandardValues(
+            $family,
+            'product_complete_false',
+            [
+                'values' => [
+                    'a_boolean' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => false,
+                        ],
+                    ],
+                ],
+            ]
+        );
+        $this->assertComplete($productCompleteFalse);
     }
 
     public function testNotCompleteBoolean()

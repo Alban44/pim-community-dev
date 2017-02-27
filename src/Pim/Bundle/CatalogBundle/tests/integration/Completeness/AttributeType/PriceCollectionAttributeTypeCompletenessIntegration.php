@@ -144,6 +144,32 @@ class PriceCollectionAttributeTypeCompletenessIntegration extends AbstractComple
         );
         $this->assertNotComplete($productAmountNull);
 
+        $productCurrencyEmptyString = $this->createProductWithStandardValues(
+            $family,
+            'product_currency_empty_string',
+            [
+                'values' => [
+                    'a_price_collection' => [
+                        [
+                            'locale' => null,
+                            'scope'  => null,
+                            'data'   => [
+                                [
+                                    'amount'   => 7,
+                                    'currency' => 'USD',
+                                ],
+                                [
+                                    'amount'   => 87,
+                                    'currency' => '',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ]
+        );
+        $this->assertNotComplete($productCurrencyEmptyString);
+
         $productMissingPrice = $this->createProductWithStandardValues(
             $family,
             'product_missing_price',
