@@ -107,7 +107,7 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
             [$fr]
         );
 
-        $productLocaleSoecificLocaleEmpty = $this->createProductWithStandardValues(
+        $productLocaleSpecificLocaleEmpty = $this->createProductWithStandardValues(
             $family,
             'product_locale_specific_locale_empty',
             [
@@ -122,8 +122,8 @@ class CompletenessForLocalisableAttributeIntegration extends AbstractCompletenes
                 ]
             ]
         );
-        $this->assertNotComplete($productLocaleSoecificLocaleEmpty, 'fr_FR', 2);
-        $this->assertComplete($productLocaleSoecificLocaleEmpty, 'en_US', 1);
+        $this->assertNotComplete($productLocaleSpecificLocaleEmpty, 'fr_FR', 2);
+        $this->assertComplete($productLocaleSpecificLocaleEmpty, 'en_US', 1);
     }
 
     public function testCompleteLocaleSpecific()
