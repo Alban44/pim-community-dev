@@ -107,7 +107,7 @@ class UniqueVariantAxisValidatorSpec extends ObjectBehavior
         ProductValueInterface $sizeProductValue,
         ProductValueInterface $colorProductValue,
         UniqueVariantAxis $uniqueVariantAxisConstraint,
-        ConstraintViolationBuilderInterface $violation
+        ConstraintViolationBuilderInterface $violationBuilder
     ) {
         $tShirtGroupType->isVariant()->willReturn(true);
 
@@ -135,7 +135,9 @@ class UniqueVariantAxisValidatorSpec extends ObjectBehavior
                 '%values%' => 'size: XL, color: Red',
             ]
         )->shouldBeCalled()
-        ->willReturn($violation);
+        ->willReturn($violationBuilder);
+        $violationBuilder->atPath('variant_group')->shouldBeCalled()->willReturn($violationBuilder);
+        $violationBuilder->addViolation()->shouldBeCalled();
 
         $this->validate($tShirtVariantGroup, $uniqueVariantAxisConstraint);
     }
@@ -213,7 +215,7 @@ class UniqueVariantAxisValidatorSpec extends ObjectBehavior
         ProductValueInterface $sizeProductValue,
         ProductValueInterface $colorProductValue,
         UniqueVariantAxis $uniqueVariantAxisConstraint,
-        ConstraintViolationBuilderInterface $violation
+        ConstraintViolationBuilderInterface $violationBuilder
     ) {
         $redTShirtProduct->getVariantGroup()->willReturn($tShirtVariantGroup);
 
@@ -264,7 +266,9 @@ class UniqueVariantAxisValidatorSpec extends ObjectBehavior
                 '%values%' => 'size: XL, color: Red',
             ]
         )->shouldBeCalled()
-        ->willReturn($violation);
+        ->willReturn($violationBuilder);
+        $violationBuilder->atPath('variant_group')->shouldBeCalled()->willReturn($violationBuilder);
+        $violationBuilder->addViolation()->shouldBeCalled();
 
         $this->validate($redTShirtProduct, $uniqueVariantAxisConstraint);
     }

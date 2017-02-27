@@ -42,14 +42,16 @@ class FamilyAttributeAsLabelValidatorSpec extends ObjectBehavior
         $context,
         FamilyInterface $family,
         AttributeInterface $attributeAsLabel,
-        ConstraintViolationBuilderInterface $violation
+        ConstraintViolationBuilderInterface $violationBuilder
     ) {
         $family->getAttributeAsLabel()->willReturn($attributeAsLabel);
         $attributeAsLabel->getCode()->willReturn('attributeAsLabelCode');
         $family->getAttributeCodes()->willReturn(['anotherAttribute']);
         $attributeAsLabel->getType()->willReturn('pim_catalog_text');
 
-        $context->buildViolation(Argument::any())->willReturn($violation)->shouldBeCalled();
+        $context->buildViolation(Argument::any())->willReturn($violationBuilder)->shouldBeCalled();
+        $violationBuilder->atPath('attribute_as_label')->willReturn($violationBuilder)->shouldBeCalled();
+        $violationBuilder->addViolation()->shouldBeCalled();
 
         $this->validate($family, $minimumRequirements);
     }
@@ -59,14 +61,16 @@ class FamilyAttributeAsLabelValidatorSpec extends ObjectBehavior
         $context,
         FamilyInterface $family,
         AttributeInterface $attributeAsLabel,
-        ConstraintViolationBuilderInterface $violation
+        ConstraintViolationBuilderInterface $violationBuilder
     ) {
         $family->getAttributeAsLabel()->willReturn($attributeAsLabel);
         $attributeAsLabel->getCode()->willReturn('attributeAsLabelCode');
         $family->getAttributeCodes()->willReturn(['attributeAsLabelCode', 'anotherAttribute']);
         $attributeAsLabel->getType()->willReturn('wrong_type');
 
-        $context->buildViolation(Argument::any())->willReturn($violation)->shouldBeCalled();
+        $context->buildViolation(Argument::any())->willReturn($violationBuilder)->shouldBeCalled();
+        $violationBuilder->atPath('attribute_as_label')->willReturn($violationBuilder)->shouldBeCalled();
+        $violationBuilder->addViolation()->shouldBeCalled();
 
         $this->validate($family, $minimumRequirements);
     }

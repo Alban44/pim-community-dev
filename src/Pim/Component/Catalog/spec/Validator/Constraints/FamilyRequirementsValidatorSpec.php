@@ -61,7 +61,7 @@ class FamilyRequirementsValidatorSpec extends ObjectBehavior
         FamilyInterface $family,
         AttributeRequirementInterface $requirementEcommerce,
         AttributeRequirementInterface $requirementMobile,
-        ConstraintViolationBuilderInterface $violation
+        ConstraintViolationBuilderInterface $violationBuilder
     ) {
         $family->getAttributeRequirements()->willReturn([$requirementEcommerce, $requirementMobile]);
         $family->getAttributeCodes()->willReturn(['sku','ecommerce']);
@@ -75,8 +75,10 @@ class FamilyRequirementsValidatorSpec extends ObjectBehavior
 
         $family->getCode()->willReturn('familyCode');
         $context->buildViolation(Argument::any(), Argument::any())
-            ->willReturn($violation)
+            ->willReturn($violationBuilder)
             ->shouldBeCalled();
+        $violationBuilder->atPath('attribute_requirements')->shouldBeCalled()->willReturn($violationBuilder);
+        $violationBuilder->addViolation()->shouldBeCalled();
 
         $this->validate($family, $minimumRequirements);
     }
@@ -87,15 +89,17 @@ class FamilyRequirementsValidatorSpec extends ObjectBehavior
         $minimumRequirements,
         FamilyInterface $family,
         AttributeRequirementInterface $attributeRequirement,
-        ConstraintViolationBuilderInterface $violation
+        ConstraintViolationBuilderInterface $violationBuilder
     ) {
         $family->getCode()->willReturn('familyCode');
         $family->getAttributeRequirements()->willReturn([$attributeRequirement]);
         $family->getAttributeCodes()->willReturn([]);
         $channelRepository->getChannelCodes()->willReturn(['ecommerce']);
         $context->buildViolation(Argument::any(), Argument::any())
-            ->willReturn($violation)
+            ->willReturn($violationBuilder)
             ->shouldBeCalled();
+        $violationBuilder->atPath('attribute_requirements')->shouldBeCalled()->willReturn($violationBuilder);
+        $violationBuilder->addViolation()->shouldBeCalled();
 
         $this->validate($family, $minimumRequirements);
     }
