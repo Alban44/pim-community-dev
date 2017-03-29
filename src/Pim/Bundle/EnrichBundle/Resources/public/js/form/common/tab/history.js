@@ -40,7 +40,7 @@ define([
              * {@inheritdoc}
              */
             render: function () {
-                if (!this.historyGrid) {
+                if (!this.historyGrid || this.historyGrid.options.object_id !== this.getFormData().meta.id) {
                     this.historyGrid = new Grid(
                         'history-grid',
                         {

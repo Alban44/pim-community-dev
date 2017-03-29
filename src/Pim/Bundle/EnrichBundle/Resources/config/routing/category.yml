@@ -12,3 +12,18 @@ pim_enrich_category_rest_get:
     path: /rest/{identifier}
     defaults: { _controller: pim_enrich.controller.rest.category:getAction, _format: json }
     methods: [GET]
+
+pim_enrich_category_rest_post:
+    path: /rest
+    defaults: { _controller: pim_enrich.controller.rest.category:postAction, _format: json }
+    methods: [POST]
+
+pim_enrich_category_rest_put:
+    path: /rest/{code}
+    defaults: { _controller: pim_enrich.controller.rest.category:putAction, _format: json }
+    methods: [PUT]
+
+pim_enrich_category_rest_remove:
+    path: /rest/{code}
+    defaults: { _controller: pim_enrich.controller.rest.category:removeAction, _format: json }
+    methods: [DELETE]

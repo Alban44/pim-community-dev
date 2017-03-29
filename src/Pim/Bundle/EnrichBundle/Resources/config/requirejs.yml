@@ -68,6 +68,9 @@ config:
             url: pim_enrich_job_instance_rest_import_put
         pim/saver/job-instance-export:
             url: pim_enrich_job_instance_rest_export_put
+        pim/saver/category:
+            postUrl: pim_enrich_category_rest_post
+            putUrl: pim_enrich_category_rest_put
         pim/fetcher-registry:
             fetchers:
                 default: pim/base-fetcher
@@ -255,6 +258,7 @@ config:
         pim/saver/group:               pimenrich/js/saver/group-saver
         pim/saver/job-instance-export: pimenrich/js/saver/job-instance-export-saver
         pim/saver/job-instance-import: pimenrich/js/saver/job-instance-import-saver
+        pim/saver/category:            pimenrich/js/saver/category-saver
 
         # Generator
         pim/media-url-generator:  pimenrich/js/generator/media-url-generator
@@ -272,6 +276,12 @@ config:
 
         # Group type
         pim/group-type-edit-form/delete:                 pimenrich/js/group-type/form/delete
+
+        # Categories
+        pim/categories-edit-form:                               pimenrich/js/categories/form/edit-form
+        pim/categories-edit-form/delete:                        pimenrich/js/categories/form/delete
+        pim/categories-edit-form/save:                          pimenrich/js/categories/form/save
+        pim/categories-edit-form/label:                         pimenrich/js/categories/label
 
         # Channel
         pim/channel-edit-form/delete:                           pimenrich/js/channel/form/delete
@@ -514,6 +524,8 @@ config:
         pim/template/form/download-file:                          pimenrich/templates/form/download-file.html
 
         pim/template/association-type/tab/properties/general:     pimenrich/templates/association-type/tab/properties/general.html
+
+        pim/template/categories/edit-form:                        pimenrich/templates/categories/form/edit-form.html
 
         pim/template/channel/tab/properties/general:                pimenrich/templates/channel/tab/properties/general.html
         pim/template/channel/tab/properties/general/currencies:     pimenrich/templates/channel/tab/properties/general/currencies.html

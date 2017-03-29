@@ -3,6 +3,7 @@ define(
         'jquery',
         'underscore',
         'backbone',
+        'pim/fetcher-registry',
         'routing',
         'oro/loading-mask',
         'oro/error',
@@ -10,10 +11,9 @@ define(
         'jquery.jstree',
         'jstree/jquery.jstree.tree_selector'
     ],
-    function ($, _, Backbone, Routing, LoadingMask, OroError, UI) {
+    function ($, _, Backbone, FetcherRegistry, Routing, LoadingMask, OroError/*, UI*/) {
         'use strict';
-
-        return function (elementId, prefixRoute) {
+        return function (elementId, prefixRoute, callbackDataUpdated) {
             var $el = $(elementId);
             if (!$el || !$el.length || !_.isObject($el)) {
                 throw new Error('Unable to instantiate tree on this element');
@@ -149,30 +149,47 @@ define(
                     if (!$el.attr('data-editable')) {
                         return;
                     }
-                    var id  = data.rslt.obj.attr('id').replace('node_', '');
-                    var url = Routing.generate(prefixRoute + '_categorytree_edit', { id: id });
+                    //TODO ALBAN => mettre tout ça au propre!
+                    //var id  = data.rslt.obj.attr('id').replace('node_', '');
+                    var code = data.rslt.obj.attr('data-code');
+                    var url = Routing.generate(prefixRoute + '_categorytree_edit', { code: code });
                     if ('#url=' + url === Backbone.history.location.hash || preventFirst) {
-                        preventFirst = false;
-                        return;
+                        //DO NOT COMMIT
+                        //preventFirst = false;
+                       // return;
                     }
                     loadingMask.show();
-                    $.ajax({
+                    FetcherRegistry.getFetcher('category').fetch(code)
+                        .then(function (data) {
+                            //debugger;
+                            data.meta = {id: data.id};
+                            loadingMask.hide();
+                            callbackDataUpdated(data, 'edit');
+                            Backbone.history.navigate('url=' + url, {trigger: false});
+
+                        });
+                    /*$.ajax({
                         async: true,
                         type: 'GET',
                         url: url + '?content=form',
                         success: function (data) {
-                            if (data) {
+                            //debugger;
+                            loadingMask.hide();
+                            callbackDataUpdated(data, 'edit');
+                            Backbone.history.navigate('url=' + url, {trigger: false});
+
+                            /*if (data) {
                                 $('#category-form').html(data);
                                 Backbone.history.navigate('url=' + url, {trigger: false});
                                 UI($('#category-form'));
                                 loadingMask.hide();
-                            }
+                            }/
                         },
                         error: function (jqXHR) {
                             OroError.dispatch(null, jqXHR);
                             loadingMask.hide();
                         }
-                    });
+                    });*/
                 }).bind('loaded.jstree', function (event, data) {
                     if (event.namespace === 'jstree') {
                         data.inst.get_tree_select().select2({ width: '100%' });

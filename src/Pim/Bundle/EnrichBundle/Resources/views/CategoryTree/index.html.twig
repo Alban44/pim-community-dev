@@ -2,28 +2,52 @@
 
 {% block head_script %}
     {{ parent() }}
-    {% include "PimEnrichBundle:CategoryTree:_scripts.html.twig" %}
 {% endblock %}
 
 {% block content %}
-    <div id="category-tree-container" class="row-fluid">
-        <div id="tree" {% if resource_granted(acl ~ '_category_edit') %} data-editable="true"{% endif %}{% if resource_granted(acl ~ '_category_create') %} data-creatable="true"{% endif %}></div>
+    <div id="categories-edit-form"></div>
+    <script>
+        require(
+            ['jquery', 'pim/fetcher-registry', 'pim/form-builder', 'pim/error', 'routing'],
+            function ($, FetcherRegistry, FormBuilder, Error, Routing) {
+                $(function () {
 
-        <div id="category-form">
-            <div class="AknInfoBlock">
-                {% if resource_granted(acl ~ '_category_edit') %}
-                    {{ 'category.suggest selection'|trans }}
-                {% endif %}
-                {% if resource_granted(acl ~ '_category_create') %}
-                    <br/>
-                    {{ 'category.or'|trans }}
-                    <br/>
-                    <a class="AknButton AknButton--withIcon AknButton--apply" href="{{ path(route ~ '_categorytree_create') }}">
-                        <i class="AknButton-icon icon-plus"></i>
-                        {{ 'category.create new'|trans }}
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+
+                    //TODO ALBAN => mettre tout ça au propre!
+                    FetcherRegistry.initialize().done(function () {
+                        FetcherRegistry.getFetcher('category').fetchAll()
+                            .then(function () {
+                                console.log("all", arguments);
+                                FormBuilder.build('pim-categories-edit-form')
+                                    .then(function (form) {
+
+                                        form.setElement('#categories-edit-form').render();
+                                        //DO NOT COMMIT!! => faire comme pour edit product
+                                        //Quick hack for managing deeplink
+                                        //Waiting to be refactored after the merge of PRXXX  ...
+                                        console.log("!!!!!!!!", Backbone.history.location.hash);
+                                        var editing = window.location.href.match(/category-tree\/.*\/edit/g);
+                                        if(editing){
+                                            var categoryCode = editing[0].split("/")[1];
+                                            console.log("Editing code??", categoryCode);
+                                           setTimeout(function () {
+                                                $('li[data-code="'+categoryCode+'"] a')[0].click();
+                                            }, 1000);
+                                        }
+                                        //form.toto()
+                                       // test();
+                                    });
+                                /*FetcherRegistry.getFetcher('category').fetch('sales')
+                                 .then(function () {
+                                 console.log("sales", arguments);
+                                 //debugger;
+                                 })*/
+                            })
+                    })
+
+
+                })
+            });
+
+    </script>
 {% endblock %}

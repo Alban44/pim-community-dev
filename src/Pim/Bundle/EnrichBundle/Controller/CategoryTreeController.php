@@ -307,41 +307,21 @@ class CategoryTreeController extends Controller
      * Edit tree action
      *
      * @param Request $request
-     * @param int     $id
+     * @param string  $code
      *
      * @throws AccessDeniedException
      *
      * @return Response
      */
-    public function editAction(Request $request, $id)
+    public function editAction(Request $request, $code)
     {
         if (false === $this->securityFacade->isGranted($this->buildAclName('category_edit'))) {
             throw new AccessDeniedException();
         }
 
-        $category = $this->findCategory($id);
-        $this->eventDispatcher->dispatch(CategoryEvents::PRE_EDIT, new GenericEvent($category));
-        $form = $this->createForm($this->rawConfiguration['form_type'], $category, $this->getFormOptions($category));
-
-        if ($request->isMethod('POST')) {
-            $form->submit($request);
-
-            if ($form->isValid()) {
-                $this->categorySaver->save($category);
-                $message = new Message(sprintf('flash.%s.updated', $category->getParent() ? 'category' : 'tree'));
-                $this->addFlash('success', $message);
-                $this->eventDispatcher->dispatch(CategoryEvents::POST_EDIT, new GenericEvent($category));
-            }
-        }
-
+        //TODO ALBAN => I should use the $code!
         return $this->render(
-            sprintf('PimEnrichBundle:CategoryTree:%s.html.twig', $request->get('content', 'edit')),
-            [
-                'form'           => $form->createView(),
-                'related_entity' => $this->rawConfiguration['related_entity'],
-                'acl'            => $this->rawConfiguration['acl'],
-                'route'          => $this->rawConfiguration['route'],
-            ]
+            sprintf('PimEnrichBundle:CategoryTree:index.html.twig')
         );
     }
 

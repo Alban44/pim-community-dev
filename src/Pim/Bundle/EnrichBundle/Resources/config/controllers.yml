@@ -329,6 +329,11 @@ services:
             - '@pim_catalog.repository.category'
             - '@pim_enrich.twig.category_extension'
             - '@pim_internal_api_serializer'
+            - '@my_test'
+            #TODO ALBAN
+            - '@pim_catalog.saver.category'
+            - '@pim_catalog.remover.category'
+            - '@pim_catalog.factory.category'
 
     pim_enrich.controller.rest.currency:
         class: '%pim_enrich.controller.rest.currency.class%'
