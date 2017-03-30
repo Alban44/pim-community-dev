@@ -1,2 +1,8 @@
 parameters:
     akeneo_classification.updater.category.class: Akeneo\Component\Classification\Updater\CategoryUpdater
+
+services:
+    my_test:
+        class: '%akeneo_classification.updater.category.class%'
+        arguments:
+            - '@pim_catalog.repository.category'

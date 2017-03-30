@@ -496,7 +496,7 @@ pim_enrich:
                     info:
                         search_attributes: Search...
                         no_available_attributes: There are no more attributes to add
-        categories:
+        category:
             btn.create.tree:  Create tree
             title.edit:       Edit category
         job_execution:

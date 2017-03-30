@@ -277,11 +277,11 @@ config:
         # Group type
         pim/group-type-edit-form/delete:                 pimenrich/js/group-type/form/delete
 
-        # Categories
-        pim/categories-edit-form:                               pimenrich/js/categories/form/edit-form
-        pim/categories-edit-form/delete:                        pimenrich/js/categories/form/delete
-        pim/categories-edit-form/save:                          pimenrich/js/categories/form/save
-        pim/categories-edit-form/label:                         pimenrich/js/categories/label
+        # Category
+        pim/category-edit-form:                                 pimenrich/js/category/form/edit-form
+        pim/category-edit-form/delete:                          pimenrich/js/category/form/delete
+        pim/category-edit-form/save:                            pimenrich/js/category/form/save
+        pim/category-edit-form/label:                           pimenrich/js/category/label
 
         # Channel
         pim/channel-edit-form/delete:                           pimenrich/js/channel/form/delete
@@ -525,7 +525,7 @@ config:
 
         pim/template/association-type/tab/properties/general:     pimenrich/templates/association-type/tab/properties/general.html
 
-        pim/template/categories/edit-form:                        pimenrich/templates/categories/form/edit-form.html
+        pim/template/category/edit-form:                          pimenrich/templates/category/form/edit-form.html
 
         pim/template/channel/tab/properties/general:                pimenrich/templates/channel/tab/properties/general.html
         pim/template/channel/tab/properties/general/currencies:     pimenrich/templates/channel/tab/properties/general/currencies.html

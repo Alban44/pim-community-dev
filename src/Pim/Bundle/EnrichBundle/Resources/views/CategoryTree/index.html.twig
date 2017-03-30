@@ -18,7 +18,7 @@
                         FetcherRegistry.getFetcher('category').fetchAll()
                             .then(function () {
                                 console.log("all", arguments);
-                                FormBuilder.build('pim-categories-edit-form')
+                                FormBuilder.build('pim-category-edit-form')
                                     .then(function (form) {
 
                                         form.setElement('#categories-edit-form').render();

@@ -106,9 +106,6 @@ class CategoryUpdater implements ObjectUpdaterInterface
         if ('labels' === $field) {
             foreach ($data as $localeCode => $label) {
                 $category->setLocale($localeCode);
-                //TODO ALBAN => why is it missing? Nobody never use this Updater?????.... What may I break with theses modifications???
-                $translation = $category->getTranslation();
-                $translation->setLabel($label);
             }
         } elseif ('parent' === $field) {
             $this->updateParent($category, $data);

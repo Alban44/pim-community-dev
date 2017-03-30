@@ -306,14 +306,13 @@ class CategoryTreeController extends Controller
     /**
      * Edit tree action
      *
-     * @param Request $request
      * @param string  $code
      *
      * @throws AccessDeniedException
      *
      * @return Response
      */
-    public function editAction(Request $request, $code)
+    public function editAction($code)
     {
         if (false === $this->securityFacade->isGranted($this->buildAclName('category_edit'))) {
             throw new AccessDeniedException();
@@ -321,7 +320,8 @@ class CategoryTreeController extends Controller
 
         //TODO ALBAN => I should use the $code!
         return $this->render(
-            sprintf('PimEnrichBundle:CategoryTree:index.html.twig')
+            'PimEnrichBundle:CategoryTree:index.html.twig',
+            ['code' => $code]
         );
     }
 

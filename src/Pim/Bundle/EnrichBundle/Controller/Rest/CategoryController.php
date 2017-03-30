@@ -6,7 +6,7 @@ use Akeneo\Component\Classification\Repository\CategoryRepositoryInterface;
 use Akeneo\Component\StorageUtils\Factory\SimpleFactoryInterface;
 use Akeneo\Component\StorageUtils\Remover\RemoverInterface;
 use Akeneo\Component\StorageUtils\Saver\SaverInterface;
-use Akeneo\Component\Classification\Updater\CategoryUpdater;
+use Akeneo\Component\StorageUtils\Updater\ObjectUpdaterInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Pim\Bundle\EnrichBundle\Twig\CategoryExtension;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @author    Clement Gautier <clement.gautier@akeneo.com>
@@ -32,7 +33,7 @@ class CategoryController
     /** @var NormalizerInterface */
     protected $normalizer;
 
-    /** @var CategoryUpdater */
+    /** @var ObjectUpdaterInterface */
     protected $updater;
 
     /** @var SaverInterface */
@@ -44,23 +45,28 @@ class CategoryController
     /** @var SimpleFactoryInterface  */
     protected $categoryFactory;
 
+    /** @var ValidatorInterface  */
+    protected $validator;
+
     /**
      * @param CategoryRepositoryInterface $repository
      * @param CategoryExtension           $twigExtension
      * @param NormalizerInterface         $normalizer
-     * @param CategoryUpdater             $updater
+     * @param ObjectUpdaterInterface      $updater
      * @param SaverInterface              $saver
      * @param RemoverInterface            $remover
      * @param SimpleFactoryInterface      $categoryFactory
+     * @param ValidatorInterface          $validator
      */
     public function __construct(
         CategoryRepositoryInterface $repository,
         CategoryExtension $twigExtension,
         NormalizerInterface $normalizer,
-        CategoryUpdater $updater,
+        ObjectUpdaterInterface $updater,
         SaverInterface $saver,
         RemoverInterface $remover,
-        SimpleFactoryInterface $categoryFactory
+        SimpleFactoryInterface $categoryFactory,
+        ValidatorInterface $validator
     ) {
         $this->repository = $repository;
         $this->twigExtension = $twigExtension;
@@ -69,6 +75,7 @@ class CategoryController
         $this->saver = $saver;
         $this->remover = $remover;
         $this->categoryFactory = $categoryFactory;
+        $this->validator = $validator;
     }
 
     /**
@@ -155,7 +162,22 @@ class CategoryController
     {
         $category = $this->categoryFactory->create();
 
-        return $this->saveCategory($category, $request);
+        $data = json_decode($request->getContent(), true);
+        $this->updater->update($category, $data);
+
+        $errors = $this->validate($category);
+        if (count($errors) > 0) {
+            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->saver->save($category);
+
+        return new JsonResponse(
+            $this->normalizer->normalize(
+                $category,
+                'internal_api'
+            )
+        );
     }
 
     /**
@@ -174,8 +196,22 @@ class CategoryController
     public function putAction(Request $request, $code)
     {
         $category = $this->getCategory($code);
+        $data = json_decode($request->getContent(), true);
+        $this->updater->update($category, $data);
 
-        return $this->saveCategory($category, $request);
+        $errors = $this->validate($category);
+        if (count($errors) > 0) {
+            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->saver->save($category);
+
+        return new JsonResponse(
+            $this->normalizer->normalize(
+                $category,
+                'internal_api'
+            )
+        );
     }
 
     /**
@@ -222,7 +258,6 @@ class CategoryController
 
     /**
      * @param CategoryInterface $category
-     * @param Request          $request
      *
      * @throws \LogicException
      * @throws PropertyException
@@ -230,13 +265,9 @@ class CategoryController
      *
      * @return JsonResponse
      */
-    protected function saveCategory($category, $request)
+    protected function validate($category)
     {
-        $data = json_decode($request->getContent(), true);
-        $this->updater->update($category, $data);
-
-        //TODO ALBAN => This is usefull????
-        /*$violations = $this->validator->validate($category);
+        $violations = $this->validator->validate($category);
 
         if (0 < $violations->count()) {
             $errors = [];
@@ -246,16 +277,9 @@ class CategoryController
                 ];
             }
 
-            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
-        }*/
+            return $errors;
+        }
 
-        $this->saver->save($category);
-
-        return new JsonResponse(
-            $this->normalizer->normalize(
-                $category,
-                'internal_api'
-            )
-        );
+        return [];
     }
 }
